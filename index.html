@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <title>منصة E‑Mall 🛍️</title>
+  <style>
+    body { font-family: 'Cairo', sans-serif; background: #f3f4f6; margin:0; padding:20px;}
+    h1 { text-align:center; color:#1f2937;}
+    .ad { background:white; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,0.1); padding:15px; margin-bottom:20px;}
+    .ad img { max-width:100%; height:auto; border-radius:6px; display:block; margin-bottom:10px; }
+    .title { font-weight:bold; font-size:1.1rem; margin-bottom:5px;}
+    .desc { font-size:.95rem; color:#4b5563; margin-bottom:8px;}
+  </style>
+</head>
+<body>
+  <h1>منصة E‑Mall 🛍️</h1>
+  <div id="ads">جارِ التحميل...</div>
+
+  <script>
+    const sheetUrl = "https://docs.google.com/spreadsheets/d/1Xni75nPl7IJRyCN4_DJ1MAmB11ZPT1X0oxsZmCMlxgs/gviz/tq?tqx=out:json&gid=2059461251";
+
+    fetch(sheetUrl)
+      .then(res => res.text())
+      .then(txt => {
+        const json = JSON.parse(txt.substr(47).slice(0, -2));
+        const rows = json.table.rows;
+        const container = document.getElementById("ads");
+        container.innerHTML = "";
+
+        if (!rows || rows.length === 0) {
+          container.textContent = "لا توجد إعلانات حالياً.";
+          return;
+        }
+
+        rows.forEach(r => {
+          const cells = r.c;
+          const title = cells[2]?.v || "بدون عنوان";
+          const desc = cells[3]?.v || "";
+          const imgUrl = cells[4]?.v || "";
+          const img2 = cells[5]?.v || "";
+          const img3 = cells[6]?.v || "";
+          const imgs = [imgUrl, img2, img3].filter(Boolean);
+          
+          const adDiv = document.createElement("div");
+          adDiv.className = "ad";
+
+          imgs.forEach(u => {
+            const img = document.createElement("img");
+            img.src = u;
+            adDiv.appendChild(img);
+          });
+
+          const t = document.createElement("div");
+          t.className = "title";
+          t.textContent = title;
+          adDiv.appendChild(t);
+
+          if (desc) {
+            const d = document.createElement("div");
+            d.className = "desc";
+            d.textContent = desc;
+            adDiv.appendChild(d);
+          }
+
+          container.appendChild(adDiv);
+        });
+      })
+      .catch(err => {
+        document.getElementById("ads").textContent = "❌ فشل تحميل البيانات";
+        console.error(err);
+      });
+  </script>
+</body>
+</html>
+

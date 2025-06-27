@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html dir="rtl" lang="ar">
 <head>
@@ -68,17 +67,15 @@
   <div class="container" id="ads-container">جارٍ التحميل...</div>
 
   <script>
-    const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSYXS6ck5TQ0s_GDMFXoBk8jtyk0yqm4WG8BifY9rJoT6jONy5yFhhkc4u5QyrcjQxPVSFZ4H2PodFS/gviz/tq?tqx=out:json&sheet=للنشر";
+    const SHEET_URL = "https://docs.google.com/spreadsheets/d/1Xni75nPl7IJRyCN4_DJ1MAmB11ZPT1X0oxsZmCMlxgs/gviz/tq?tqx=out:json&gid=2059461251";
 
     async function fetchAds() {
       const res = await fetch(SHEET_URL);
       const text = await res.text();
       const json = JSON.parse(text.substr(47).slice(0, -2));
       const data = json.table.rows.map(r => r.c.map(c => c ? c.v : ""));
-
       const headers = json.table.cols.map(c => c.label);
       const ads = data.map(row => Object.fromEntries(row.map((v, i) => [headers[i], v])));
-
       return ads;
     }
 

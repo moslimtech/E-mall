@@ -1,20 +1,28 @@
+
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html dir="rtl" lang="ar">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>منصة E-Mall 🛍️</title>
   <style>
     body {
       font-family: 'Cairo', sans-serif;
-      background: #f9fafb;
-      margin: 0; padding: 0;
+      background-color: #f9fafb;
+      margin: 0;
+      padding: 0;
     }
     header {
-      background: #1e40af;
+      background: #3b82f6;
       color: white;
-      text-align: center;
       padding: 1rem;
-      font-size: 1.5rem;
+      font-size: 1.4rem;
+      text-align: center;
+    }
+    select {
+      margin: 1rem;
+      padding: 0.5rem;
+      font-size: 1rem;
     }
     .container {
       display: grid;
@@ -24,9 +32,10 @@
     }
     .card {
       background: white;
-      border-radius: 10px;
+      border-radius: 12px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
       overflow: hidden;
+      transition: 0.3s;
     }
     .card img {
       width: 100%;
@@ -36,59 +45,103 @@
     .card-content {
       padding: 1rem;
     }
-    .title {
-      font-weight: bold;
+    .card-content .title {
       font-size: 1.1rem;
-      margin-bottom: 0.5rem;
+      font-weight: bold;
+      color: #1f2937;
     }
-    .desc {
+    .card-content .desc {
       font-size: 0.95rem;
       color: #4b5563;
+      margin: 0.5rem 0;
     }
   </style>
 </head>
 <body>
   <header>منصة E-Mall 🛍️</header>
+  <div style="text-align:center;">
+    <label for="filter">فلتر حسب النشاط:</label>
+    <select id="filter">
+      <option value="">الكل</option>
+    </select>
+  </div>
   <div class="container" id="ads-container">جارٍ التحميل...</div>
 
   <script>
-    const SHEET_URL = "https://docs.google.com/spreadsheets/d/1Xni75nPl7IJRyCN4_DJ1MAmB11ZPT1X0oxsZmCMlxgs/gviz/tq?tqx=out:json&sheet=للنشر";
+    const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSYXS6ck5TQ0s_GDMFXoBk8jtyk0yqm4WG8BifY9rJoT6jONy5yFhhkc4u5QyrcjQxPVSFZ4H2PodFS/gviz/tq?tqx=out:json&sheet=للنشر";
 
-    fetch(SHEET_URL)
-      .then(res => res.text())
-      .then(text => {
-        const json = JSON.parse(text.substr(47).slice(0, -2));
-        const rows = json.table.rows;
-        const container = document.getElementById('ads-container');
-        container.innerHTML = '';
+    async function fetchAds() {
+      const res = await fetch(SHEET_URL);
+      const text = await res.text();
+      const json = JSON.parse(text.substr(47).slice(0, -2));
+      const data = json.table.rows.map(r => r.c.map(c => c ? c.v : ""));
 
-        rows.forEach(row => {
-          const cells = row.c.map(c => (c ? c.v : ""));
-          const title = cells[2];
-          const desc = cells[3];
-          const imageName = cells[7];
-          const appName = "E-mall-800546514";
-          const tableName = "الإعلانات";
-          const imgURL = imageName
-            ? `https://www.appsheet.com/template/gettablefileurl?appName=${appName}&tableName=${tableName}&fileName=${encodeURIComponent(imageName)}`
-            : "https://via.placeholder.com/300x180?text=No+Image";
+      const headers = json.table.cols.map(c => c.label);
+      const ads = data.map(row => Object.fromEntries(row.map((v, i) => [headers[i], v])));
 
-          const card = document.createElement("div");
-          card.className = "card";
-          card.innerHTML = `
-            <img src="${imgURL}" alt="${title}" />
-            <div class="card-content">
-              <div class="title">${title}</div>
-              <div class="desc">${desc}</div>
-            </div>
-          `;
-          container.appendChild(card);
-        });
-      })
-      .catch(err => {
-        document.getElementById('ads-container').innerText = 'حدث خطأ في تحميل البيانات';
-        console.error(err);
+      return ads;
+    }
+
+    function extractImageUrl(fileName) {
+      if (!fileName) return null;
+      const appName = "E-mall-800546514";
+      return `https://www.appsheet.com/template/gettablefileurl?appName=${appName}&tableName=الإعلانات&fileName=${encodeURIComponent(fileName)}`;
+    }
+
+    function buildCard(ad) {
+      const container = document.createElement("div");
+      container.className = "card";
+
+      const mainImage = extractImageUrl(ad["صورة"]) || "https://via.placeholder.com/300x180?text=No+Image";
+      const title = ad["عنوان العرض"] || "بدون عنوان";
+      const desc = ad["وصف"] || "لا يوجد وصف";
+
+      const images = [];
+      for (let i = 2; i <= 8; i++) {
+        const imageField = ad["صورة" + i];
+        if (imageField) images.push(extractImageUrl(imageField));
+      }
+
+      const imageHtml = [mainImage, ...images].filter(Boolean).map(url => `<img src="${url}" alt="صورة">`).join("");
+
+      container.innerHTML = `
+        ${imageHtml}
+        <div class="card-content">
+          <div class="title">${title}</div>
+          <div class="desc">${desc}</div>
+        </div>
+      `;
+      return container;
+    }
+
+    async function renderAds() {
+      const ads = await fetchAds();
+      const container = document.getElementById("ads-container");
+      const select = document.getElementById("filter");
+
+      const activitySet = new Set();
+      ads.forEach(ad => {
+        if (ad["نوع النشاط"]) activitySet.add(ad["نوع النشاط"]);
       });
+
+      activitySet.forEach(act => {
+        const opt = document.createElement("option");
+        opt.value = act;
+        opt.textContent = act;
+        select.appendChild(opt);
+      });
+
+      function showFilteredAds(value) {
+        container.innerHTML = "";
+        ads.filter(ad => !value || ad["نوع النشاط"] === value)
+            .forEach(ad => container.appendChild(buildCard(ad)));
+      }
+
+      select.addEventListener("change", () => showFilteredAds(select.value));
+      showFilteredAds("");
+    }
+
+    renderAds();
   </script>
 </body>
 </html>

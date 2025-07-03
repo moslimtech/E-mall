@@ -1,168 +1,107 @@
 <!DOCTYPE html>
-<html dir="rtl" lang="ar">
-  <head>
-    <base target="_top">
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>منصة E-Mall</title>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
-    
-    <style>
-      /* تصميم CSS */
-      body {
-        font-family: 'Cairo', sans-serif;
-        margin: 0;
-        padding: 0;
-        background: #f3f4f6; /* خلفية رمادية فاتحة */
-        color: #333; /* لون النص الأساسي */
-        direction: rtl; /* اتجاه النص من اليمين لليسار */
-      }
-      header {
-        background: #2563eb; /* لون أزرق داكن للرأس */
-        color: white;
-        padding: 1rem;
-        text-align: center;
-        font-size: 1.8rem; /* حجم خط أكبر للرأس */
-        font-weight: 700; /* خط سميك */
-        box-shadow: 0 4px 8px rgba(0,0,0,0.1); /* ظل للرأس */
-      }
-      .container {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* شبكة متجاوبة للبطاقات */
-        gap: 1.5rem; /* مسافة بين البطاقات */
-        padding: 1.5rem;
-        max-width: 1200px; /* أقصى عرض للمحتوى */
-        margin: 20px auto; /* توسيط المحتوى */
-      }
-      .card {
-        background: white;
-        border-radius: 12px; /* زوايا مستديرة للبطاقة */
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1); /* ظل أعمق للبطاقة */
-        overflow: hidden; /* إخفاء أي جزء يتجاوز حدود البطاقة */
-        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out; /* تأثير عند التحويم */
-      }
-      .card:hover {
-        transform: translateY(-5px); /* رفع البطاقة قليلاً عند التحويم */
-        box-shadow: 0 8px 20px rgba(0,0,0,0.2); /* ظل أكبر عند التحويم */
-      }
-      .card img {
-        width: 100%;
-        height: 180px; /* ارتفاع ثابت للصور */
-        object-fit: cover; /* تغطية الصورة للمساحة مع الحفاظ على الأبعاد */
-        border-bottom: 1px solid #eee; /* خط فاصل أسفل الصورة */
-      }
-      .card-content {
-        padding: 1rem;
-      }
-      .title {
-        font-size: 1.25rem; /* حجم أكبر للعنوان */
-        font-weight: 700; /* خط سميك للعنوان */
-        color: #1a202c; /* لون داكن للعنوان */
-        margin-bottom: 0.5rem;
-      }
-      .desc {
-        color: #4a5568; /* لون متوسط للوصف */
-        font-size: 1rem;
-        line-height: 1.6; /* تباعد الأسطر */
-      }
-      /* تنسيق رسائل التحميل والخطأ */
-      .message {
-        text-align: center;
-        padding: 2rem;
-        font-size: 1.2rem;
-        color: #555;
-      }
-    </style>
-  </head>
-  <body>
-    <header>مرحبًا بك في منصة E-Mall 🛒</header>
-    
-    <div class="container" id="ads-container">
-      <p class="message">جارٍ التحميل... <span style="font-size: 2em;">⏳</span></p>
-    </div>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8" />
+  <title>معرض الإعلانات</title>
+  <style>
+    body      { direction:rtl;font-family:Calibri,Arial;background:#f6f6f6;margin:0;padding:20px }
+    h1        { text-align:center;color:#333;margin-bottom:25px }
+    .card     { background:#fff;border-radius:12px;box-shadow:0 2px 6px rgba(0,0,0,.12);
+                margin:20px auto;max-width:900px;padding:18px }
+    .title    { font-weight:bold;font-size:1.2rem;margin-bottom:6px;color:#0a3e68 }
+    .desc     { margin:6px 0 14px;color:#555 }
+    .mediaBox { display:flex;flex-wrap:wrap;gap:12px;justify-content:center }
+    iframe    { width:360px;height:202px;border:none;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,.1) }
+    img       { width:180px;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,.1) }
+  </style>
+</head>
+<body>
 
-    <script>
-      async function fetchAds() {
-        const container = document.getElementById('ads-container');
-        container.innerHTML = `<p class="message">جارٍ التحميل... <span style="font-size: 2em;">⏳</span></p>`; // إظهار رسالة التحميل مرة أخرى عند كل محاولة
+<h1>معرض الإعلانات</h1>
+<div id="ads"></div>
 
-        try {
-          // *** استبدل هذا الرابط بـ "عنوان URL لتطبيق الويب" الخاص بك من Apps Script + '?get=json' ***
-          const appsScriptUrl = 'https://script.google.com/macros/s/AKfycbx4y5_-zvzzlPWxjwvRBmutBgX87NwhfPaYwErvhsEsNbRODggyO37-OwwtqHepbxbe/exec?get=json';
-          
-          const res = await fetch(appsScriptUrl);
-          
-          // تحقق مما إذا كانت الاستجابة ناجحة (حالة 200)
-          if (!res.ok) {
-            throw new Error(`خطأ في الشبكة أو الخادم: ${res.status} ${res.statusText}`);
-          }
-          
-          const data = await res.json();
+<script>
+/* ‑‑‑‑‑‑ CONFIG ‑‑‑‑‑‑ */
+const SHEET   = 'الاعلانات';                // اسم الورقة
+const SHEETID = '1Xni75nPl7IJRyCN4_DJ1MAmB11ZPT1X0oxsZmCMlxgs';             // ضع معرِّف Google Sheet هنا
+/* ‑‑‑‑‑‑ /CONFIG ‑‑‑‑‑‑ */
 
-          container.innerHTML = ''; // مسح رسالة التحميل
+const url = `https://docs.google.com/spreadsheets/d/${SHEETID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET)}`;
 
-          if (!Array.isArray(data) || data.length === 0) {
-            container.innerHTML = '<p class="message">لا توجد إعلانات حالياً. <span style="font-size: 2em;">😔</span></p>';
-            return;
-          }
+fetch(url)
+  .then(r => r.text())
+  .then(raw => JSON.parse(raw.slice(47,-2)))
+  .then(data => {
+      const rows = data.table.rows;
+      const head = data.table.cols.map(c => c.label.trim());
+      const elAds = document.getElementById('ads');
 
-          data.forEach(ad => {
-            const imgField = ad['صورة'] || '';
-            let imageId = '';
-            // محاولة استخراج معرف Google Drive سواء كان رابطًا كاملاً أو معرفًا مباشرًا
-            if (imgField.includes('id=')) {
-                imageId = imgField.split('id=').pop().split('&')[0];
-            } else if (imgField.length > 10 && !imgField.includes('/')) { // افتراض أن المعرفات تكون أطول من 10 أحرف ولا تحتوي على /
-                imageId = imgField;
-            }
-            // بناء رابط صورة Google Drive أو استخدام صورة بديلة
-            const imageUrl = imageId ? `https://drive.google.com/uc?id=${imageId}` : 'https://via.placeholder.com/300x180?text=لا+توجد+صورة';
+      rows.forEach(r => {
+        const obj = {};
+        head.forEach((h,i)=> obj[h] = r.c[i]?.v || '');
 
-            const title = ad['عنوان العرض'] || 'بدون عنوان';
-            const desc = ad['وصف'] || 'لا يوجد وصف';
+        const hasMedia = obj['فيديو'] || obj['صورة'] || obj['صورة2'] || obj['شعار المكان'];
+        if (!hasMedia) return;            // تجاهل الصفوف الخالية تمامًا
 
-            // إنشاء عناصر الكارت
-            const card = document.createElement('div');
-            card.className = 'card';
+        const card  = document.createElement('div');
+        card.className = 'card';
 
-            const img = document.createElement('img');
-            img.src = imageUrl;
-            img.alt = title;
-            // معالجة خطأ تحميل الصورة
-            img.onerror = function() {
-                this.onerror = null; // لمنع الحلقة اللانهائية في حالة الخطأ
-                this.src = 'https://via.placeholder.com/300x180?text=خطأ+الصورة';
-            };
-
-
-            const content = document.createElement('div');
-            content.className = 'card-content';
-
-            const titleDiv = document.createElement('div');
-            titleDiv.className = 'title';
-            titleDiv.textContent = title;
-
-            const descDiv = document.createElement('div');
-            descDiv.className = 'desc';
-            descDiv.textContent = desc;
-
-            // تركيب العناصر
-            content.appendChild(titleDiv);
-            content.appendChild(descDiv);
-            card.appendChild(img);
-            card.appendChild(content);
-            container.appendChild(card);
-          });
-
-        } catch (err) {
-          console.error("❌ خطأ أثناء تحميل البيانات:", err);
-          container.innerHTML = '<p class="message">⚠️ حدث خطأ أثناء تحميل البيانات. يرجى المحاولة لاحقاً.<span style="font-size: 2em;">🙁</span></p>';
+        /* العنوان والوصف */
+        if (obj['عنوان العرض']) {
+          const t = document.createElement('div');
+          t.className='title'; t.textContent = obj['عنوان العرض'];
+          card.appendChild(t);
         }
-      }
+        if (obj['وصف']) {
+          const d = document.createElement('div');
+          d.className='desc'; d.textContent = obj['وصف'];
+          card.appendChild(d);
+        }
 
-      // استدعاء الدالة عند تحميل الصفحة
-      fetchAds();
-    </script>
-  </body>
+        /* الوسائط */
+        const box = document.createElement('div');
+        box.className = 'mediaBox';
+
+        // فيديو
+        if (obj['رابط الفيديو']) {
+          box.appendChild(makeIframe(obj['رابط الفيديو']));
+        }
+
+        // صور 1‑8
+        for (let i=0;i<=8;i++){
+          const imgCol  = i===0 ? 'رابط الصورة'   : `رابط صورة${i}`;
+          const link = obj[imgCol];
+          if (link) box.appendChild(makeImg(link));
+        }
+
+        // شعار المكان
+        if (obj['رابط صورة شعار المكان']) {
+          box.appendChild(makeImg(obj['رابط صورة شعار المكان']));
+        }
+
+        card.appendChild(box);
+        elAds.appendChild(card);
+      });
+  })
+  .catch(err => console.error('Sheet Load Error:',err));
+
+/* helpers */
+function makeIframe(src){
+  const f=document.createElement('iframe');
+  f.src = fixDriveLink(src); f.allowFullscreen=true; return f;
+}
+function makeImg(src){
+  const im=document.createElement('img');
+  im.src = fixDriveLink(src); return im;
+}
+function fixDriveLink(link){
+  /* يحوّل أي رابط Google Drive إلى صيغة preview المناسبة */
+  if (/\/file\/d\/.+\/preview/.test(link)) return link;
+  const idMatch = link.match(/[-\w]{25,}/);
+  return idMatch ? `https://drive.google.com/file/d/${idMatch[0]}/preview` : link;
+}
+</script>
+
+</body>
 </html>
+

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <title>عروض المحلات</title>
+  <style>
+    body      { direction:rtl;font-family:"Segoe UI",Tahoma,sans-serif;background:#f0f2f5;padding:20px;margin:0 }
+    h1        { text-align:center;color:#222;margin-bottom:30px }
+    .filters  { max-width:800px;margin:0 auto 30px;display:flex;gap:10px;flex-wrap:wrap;justify-content:center }
+    select    { padding:8px 12px;border-radius:8px;border:1px solid #ccc;min-width:140px }
+    .shopList { display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;max-width:1100px;margin:0 auto }
+    .shopCard { background:white;border-radius:12px;box-shadow:0 2px 5px rgba(0,0,0,0.1);padding:16px;text-align:center }
+    .shopCard img { width:80px;height:80px;border-radius:50%;object-fit:cover;margin-bottom:10px }
+    .shopCard h3 { margin:10px 0 5px;color:#0a3e68;font-size:1.1rem }
+    .shopCard p  { margin:4px 0;color:#666;font-size:0.9rem }
+    .btn       { background:#0a3e68;color:#fff;padding:6px 10px;border:none;border-radius:6px;cursor:pointer;font-size:0.9rem }
+    .btn:hover { background:#095 }
+  </style>
+</head>
+<body>
+
+<h1>مرحبًا بك في منصة العروض</h1>
+<div class="filters">
+  <select id="citySelect">
+    <option value="">اختر المدينة</option>
+  </select>
+  <select id="mallSelect">
+    <option value="">اختر المول</option>
+  </select>
+</div>
+<div class="shopList" id="shopList"></div>
+
+<script>
+const SHEET_ID = "1Xni75nPl7IJRyCN4_DJ1MAmB11ZPT1X0oxsZmCMlxgs";
+const SHEET_NAME = "معلومات المحل";
+const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}`;
+
+let allShops = [];
+
+fetch(SHEET_URL)
+  .then(res => res.text())
+  .then(text => JSON.parse(text.slice(47, -2)))
+  .then(json => {
+    const rows = json.table.rows;
+    const headers = json.table.cols.map(c => c.label.trim());
+
+    allShops = rows.map(r => {
+      const row = {};
+      headers.forEach((h,i)=> row[h] = r.c[i]?.v || "");
+      return row;
+    });
+
+    populateCities();
+  });
+
+function populateCities() {
+  const cities = [...new Set(allShops.map(s => s['المدينة']).filter(Boolean))];
+  const citySelect = document.getElementById('citySelect');
+  cities.forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c; opt.textContent = c;
+    citySelect.appendChild(opt);
+  });
+  citySelect.addEventListener('change', updateMalls);
+}
+
+function updateMalls() {
+  const city = document.getElementById('citySelect').value;
+  const malls = [...new Set(allShops.filter(s => s['المدينة'] === city).map(s => s['المول/السوق التجاري']).filter(Boolean))];
+  const mallSelect = document.getElementById('mallSelect');
+  mallSelect.innerHTML = '<option value="">اختر المول</option>';
+  malls.forEach(m => {
+    const opt = document.createElement('option');
+    opt.value = m; opt.textContent = m;
+    mallSelect.appendChild(opt);
+  });
+  mallSelect.addEventListener('change', showShops);
+  document.getElementById('shopList').innerHTML = '';
+}
+
+function showShops() {
+  const city = document.getElementById('citySelect').value;
+  const mall = document.getElementById('mallSelect').value;
+  const filtered = allShops.filter(s => s['المدينة'] === city && s['المول/السوق التجاري'] === mall);
+
+  const list = document.getElementById('shopList');
+  list.innerHTML = '';
+
+  filtered.forEach(s => {
+    const card = document.createElement('div');
+    card.className = 'shopCard';
+
+    const img = document.createElement('img');
+    img.src = fixDriveLink(s['صورة شعار المكان']);
+
+    const name = document.createElement('h3');
+    name.textContent = s['اسم المكان'];
+
+    const cat = document.createElement('p');
+    cat.textContent = s['نوع النشاط'] || '';
+
+    const phone = document.createElement('p');
+    phone.textContent = s['رقم التواصل'] || '';
+
+    const btn = document.createElement('button');
+    btn.className = 'btn';
+    btn.textContent = 'شاهد العروض';
+    btn.onclick = () => window.location.href = `ads.html?place=${s['معرف المكان']}`;
+
+    card.append(img, name, cat, phone, btn);
+    list.appendChild(card);
+  });
+}
+
+function fixDriveLink(link){
+  if (!link) return '';
+  const id = link.match(/[-\w]{25,}/);
+  return id ? `https://drive.google.com/uc?export=view&id=${id[0]}` : link;
+}
+</script>
+
+</body>
+</html>

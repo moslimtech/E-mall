@@ -1,64 +1,165 @@
+-->
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>إعلانات المكان</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<!-- تضمين Tailwind CSS لتصميم سريع وجميل -->
+<script src="https://cdn.tailwindcss.com"></script>
 <style>
-body { font-family: 'Cairo', sans-serif; background: #f9f9f9; padding: 10px; }
-h2 { text-align: center; margin-bottom: 10px; }
-.ads-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
-.ad-card { background: #fff; padding: 8px; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); text-align: center; }
-.ad-card img, .ad-card iframe { width: 100%; border-radius: 6px; margin-bottom: 6px; }
+  body { font-family: 'Cairo', sans-serif; background:#f9f9f9; margin:0; padding:15px; }
+  h1 { text-align:center; margin-bottom:15px; color: #333; }
+  .ads-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:12px; }
+  .ad-card { background:#fff; border-radius:10px; padding:10px; box-shadow:0 2px 6px rgba(0,0,0,.1); text-align:center; transition: transform 0.2s ease-in-out; }
+  .ad-card:hover { transform: translateY(-5px); }
+  .ad-card img { width:100%; height:120px; object-fit:cover; border-radius:6px; margin-bottom:6px; }
+  .ad-card h3 { font-size:14px; margin:5px 0; color: #333; }
+  .ad-card p { font-size:12px; color:#555; margin:2px 0; }
+  .ad-card a { color: #2196f3; text-decoration: none; font-weight: bold; transition: color 0.2s ease-in-out; }
+  .ad-card a:hover { color: #1976d2; }
+  .btn-back { background:#2196f3; color:white; padding:8px 12px; border:none; border-radius:5px; cursor:pointer; display:block; margin:10px auto; transition: background-color 0.2s ease-in-out; }
+  .btn-back:hover { background:#1976d2; }
+
+  /* مؤشر التحميل */
+  .loading-spinner {
+      border: 4px solid rgba(0, 0, 0, 0.1);
+      border-left-color: #2196f3; /* لون أزرق جذاب */
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+      margin: 20px auto;
+  }
+  @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+  }
+  .status-message {
+      text-align: center;
+      padding: 10px;
+      color: #555;
+  }
 </style>
 </head>
 <body>
-<h2>إعلانات المكان</h2>
-<div class="ads-grid" id="adsGrid"></div>
+<h1>إعلانات المكان</h1>
+<button class="btn-back" onclick="window.history.back()">رجوع</button>
+<div class="status-message" id="globalStatusMessage">
+    <div class="loading-spinner"></div>
+    <p>جارٍ تحميل الإعلانات...</p>
+</div>
+<div id="adsGrid" class="ads-grid"></div>
 
 <script>
-const API_URL = "YOUR_GOOGLE_SCRIPT_WEBAPP_URL";
-const params = new URLSearchParams(window.location.search);
-const placeId = params.get('place');
+// 🚨 هام: هذا هو رابط الـ Web App الخاص بك الذي حصلت عليه من Google Apps Script
+const API_URL = "https://script.google.com/macros/s/AKfycbxkKrHyeEAgSkLz2QHzSgA5w09dIvfFJgDUMkP373f-VVAZmahHalr0GOYojqK41x6E/exec"; 
 
-async function loadAds() {
-  const res = await fetch(API_URL);
-  const data = await res.json();
-  const ads = data.ads.filter(ad => ad['معرف المكان'] === placeId && ad['حالة الاعلان'] === 'نشط');
+// فترة الاستعلام بالمللي ثانية (مثال: كل 10 ثوانٍ)
+const POLLING_INTERVAL_MS = 10000; // 10 ثوانٍ
 
-  const grid = document.getElementById('adsGrid');
-  if (ads.length === 0) {
-    grid.innerHTML = '<p style="text-align:center;">لا توجد إعلانات متاحة</p>';
+const urlParams = new URLSearchParams(window.location.search);
+const placeId = urlParams.get('place');
+
+const adsGrid = document.getElementById("adsGrid");
+const globalStatusMessage = document.getElementById('globalStatusMessage');
+
+let currentAdsForPlace = []; // لتخزين الإعلانات الحالية لهذا المكان
+
+/**
+ * يجلب البيانات من Google Apps Script Web App API.
+ * @returns {Promise<Object|null>} كائن يحتوي على بيانات الأماكن والإعلانات، أو null في حالة الخطأ.
+ */
+async function fetchData() {
+    globalStatusMessage.innerHTML = '<div class="loading-spinner"></div><p>جارٍ تحميل الإعلانات...</p>';
+    globalStatusMessage.style.display = 'block'; // عرض رسالة التحميل
+
+    try {
+        const response = await fetch(API_URL);
+        const data = await response.json();
+
+        if (response.ok && !data.error) {
+            globalStatusMessage.style.display = 'none'; // إخفاء رسالة التحميل عند النجاح
+            return data;
+        } else {
+            console.error('خطأ في جلب البيانات من API:', data.error || response.statusText);
+            globalStatusMessage.innerHTML = `<p class="text-red-500">خطأ في جلب البيانات: ${data.error || response.statusText}</p>`;
+            return null;
+        }
+    } catch (error) {
+        console.error('حدث خطأ أثناء جلب البيانات:', error);
+        globalStatusMessage.innerHTML = `<p class="text-red-500">حدث خطأ غير متوقع: ${error.message}</p>`;
+        return null;
+    }
+}
+
+/**
+ * يقوم بعرض الإعلانات الخاصة بالمكان المحدد.
+ * @param {Array<Object>} ads - مصفوفة بيانات الإعلانات.
+ */
+function renderAds(ads) {
+  adsGrid.innerHTML = ""; // مسح الشبكة الحالية
+
+  const filteredAds = ads.filter(ad => 
+    ad["معرف المكان"] === placeId && ad["حالة الاعلان"] === "نشط"
+  );
+
+  if (filteredAds.length === 0) {
+    adsGrid.innerHTML = "<p class='text-center text-gray-500 py-4 col-span-full'>لا توجد إعلانات نشطة لهذا المكان.</p>";
     return;
   }
 
-  grid.innerHTML = '';
-  ads.forEach(ad => {
-    let mediaHTML = '';
-    if (ad['رابط يوتيوب']) {
-      mediaHTML = `<iframe src="https://www.youtube.com/embed/${extractYouTubeId(ad['رابط يوتيوب'])}" allowfullscreen></iframe>`;
-    } else if (ad['رابط الصورة']) {
-      mediaHTML = `<img src="${ad['رابط الصورة']}" />`;
-    }
+  filteredAds.forEach(ad => {
+    const card = document.createElement("div");
+    card.className = "ad-card";
 
-    const card = document.createElement('div');
-    card.className = 'ad-card';
     card.innerHTML = `
-      ${mediaHTML}
-      <h4>${ad['عنوان العرض'] || ''}</h4>
-      <p>${ad['وصف'] || ''}</p>
+      <img src="${ad["رابط الصورة"] || 'https://placehold.co/150x120/cccccc/333333?text=لا توجد صورة'}" 
+           alt="إعلان"
+           onerror="this.onerror=null;this.src='https://placehold.co/150x120/cccccc/333333?text=خطأ في الصورة';">
+      <h3>${ad["عنوان العرض"] || "عرض بدون عنوان"}</h3>
+      <p>${ad["وصف"] || ""}</p>
+      ${ad["رابط الفيديو"] ? `<p><a href="${ad["رابط الفيديو"]}" target="_blank">مشاهدة الفيديو</a></p>` : ""}
+      <p>من ${ad["تاريخ بداية الاعلان"] || "-"} إلى ${ad["تاريخ نهاية الاعلان"] || "-"}</p>
     `;
-    grid.appendChild(card);
+    adsGrid.appendChild(card);
   });
 }
 
-function extractYouTubeId(url) {
-  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=)([^#\&\?]*).*/;
-  const match = url.match(regExp);
-  return (match && match[2].length === 11) ? match[2] : null;
+/**
+ * وظيفة التهيئة الأولية وجلب البيانات الدورية.
+ */
+async function init() {
+    const newData = await fetchData();
+    if (newData && newData.ads) {
+        const filteredAds = newData.ads.filter(ad => 
+            ad["معرف المكان"] === placeId && ad["حالة الاعلان"] === "نشط"
+        );
+
+        // التحقق مما إذا كانت الإعلانات لهذا المكان قد تغيرت قبل التحديث
+        if (JSON.stringify(filteredAds) !== JSON.stringify(currentAdsForPlace)) {
+            currentAdsForPlace = filteredAds;
+            renderAds(currentAdsForPlace);
+            console.log("إعلانات المكان تم تحديثها وعرضها بنجاح.");
+        } else {
+            console.log("إعلانات المكان لم تتغير. لا حاجة للتحديث.");
+        }
+    }
 }
 
-loadAds();
+// تشغيل التهيئة الأولية عند تحميل الصفحة
+document.addEventListener('DOMContentLoaded', () => {
+    if (!placeId) {
+        adsGrid.innerHTML = '<p class="text-center text-red-500 py-4 col-span-full">خطأ: لم يتم تحديد معرف المكان.</p>';
+        globalStatusMessage.style.display = 'none';
+        return;
+    }
+    init(); // جلب البيانات لأول مرة
+    // بدء الاستعلام المتكرر بعد التحميل الأولي
+    setInterval(init, POLLING_INTERVAL_MS);
+});
 </script>
 </body>
 </html>
+<!--

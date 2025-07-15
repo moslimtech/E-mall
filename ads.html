@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>إعلانات المكان</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+  body { font-family: 'Cairo', sans-serif; background:#f9f9f9; margin:0; padding:15px; }
+  h1 { text-align:center; margin-bottom:15px; }
+  .ads-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:12px; }
+  .ad-card { background:#fff; border-radius:10px; padding:10px; box-shadow:0 2px 6px rgba(0,0,0,.1); text-align:center; }
+  .ad-card img { width:100%; height:120px; object-fit:cover; border-radius:6px; margin-bottom:6px; }
+  .ad-card h3 { font-size:14px; margin:5px 0; }
+  .ad-card p { font-size:12px; color:#555; margin:2px 0; }
+  .btn-back { background:#2196f3; color:white; padding:8px 12px; border:none; border-radius:5px; cursor:pointer; display:block; margin:10px auto; }
+</style>
+</head>
+<body>
+<h1>إعلانات المكان</h1>
+<button class="btn-back" onclick="window.history.back()">رجوع</button>
+<div id="adsGrid" class="ads-grid"></div>
+
+<script>
+const API_URL = "https://script.google.com/macros/s/AKfycbxkKrHyeEAgSkLz2QHzSgA5w09dIvfFJgDUMkP373f-VVAZmahHalr0GOYojqK41x6E/exec"; // ضع هنا رابط الـ Web App
+
+// الحصول على معرف المكان من الرابط
+const urlParams = new URLSearchParams(window.location.search);
+const placeId = urlParams.get('place');
+
+async function fetchData() {
+  const res = await fetch(API_URL);
+  return res.json();
+}
+
+function renderAds(ads) {
+  const grid = document.getElementById("adsGrid");
+  grid.innerHTML = "";
+
+  if (ads.length === 0) {
+    grid.innerHTML = "<p style='text-align:center;'>لا توجد إعلانات لهذا المكان.</p>";
+    return;
+  }
+
+  ads.forEach(ad => {
+    const card = document.createElement("div");
+    card.className = "ad-card";
+
+    card.innerHTML = `
+      <img src="${ad["رابط الصورة"] || 'https://via.placeholder.com/150'}" alt="إعلان">
+      <h3>${ad["عنوان العرض"] || "عرض بدون عنوان"}</h3>
+      <p>${ad["وصف"] || ""}</p>
+      ${ad["رابط الفيديو"] ? `<p><a href="${ad["رابط الفيديو"]}" target="_blank">مشاهدة الفيديو</a></p>` : ""}
+      <p>من ${ad["تاريخ  بداية الاعلان"] || "-"} إلى ${ad["تاريخ نهاية الاعلان"] || "-"}</p>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+async function init() {
+  const data = await fetchData();
+  const ads = data.ads.filter(ad => ad["معرف المكان"] === placeId && ad["حالة الاعلان"] === "نشط");
+  renderAds(ads);
+}
+
+init();
+setInterval(init, 30000); // تحديث كل 30 ثانية
+</script>
+</body>
+</html>
+

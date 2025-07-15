@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>المول الإلكتروني</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+  body { font-family: 'Cairo', sans-serif; background:#f9f9f9; margin:0; padding:15px; }
+  h1 { text-align:center; margin-bottom:15px; }
+  .filter-bar { display:flex; gap:10px; flex-wrap:wrap; justify-content:center; margin-bottom:20px; }
+  .filter-bar select { padding:8px; font-size:14px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(180px, 1fr)); gap:12px; }
+  .card { background:#fff; border-radius:10px; padding:10px; box-shadow:0 2px 6px rgba(0,0,0,.1); position:relative; text-align:center; }
+  .status { width:12px; height:12px; border-radius:50%; position:absolute; top:8px; left:8px; }
+  .status.open { background:green; } .status.closed { background:red; } .status.prayer { background:orange; }
+  .badge { position:absolute; top:8px; right:8px; background:#e91e63; color:white; padding:2px 6px; font-size:11px; border-radius:8px; }
+  .card img { width:100%; height:90px; object-fit:cover; border-radius:6px; margin-bottom:6px; }
+  .card h3 { font-size:14px; margin:5px 0; }
+  .card p { font-size:12px; color:#555; margin:2px 0; }
+  .contact { display:flex; justify-content:center; gap:10px; margin-top:6px; }
+  .contact a { font-size:16px; color:#4caf50; text-decoration:none; }
+  .btn { background:#2196f3; color:white; padding:5px 8px; border:none; border-radius:5px; font-size:13px; cursor:pointer; margin-top:8px; }
+</style>
+</head>
+<body>
+<h1>المول الإلكتروني</h1>
+<div class="filter-bar">
+  <select id="filter-activity"><option value="">كل الأنشطة</option></select>
+  <select id="filter-city"><option value="">كل المدن</option></select>
+</div>
+<div class="grid" id="placesGrid"></div>
+
+<script>
+const API_URL = "https://script.google.com/macros/s/AKfycbxkKrHyeEAgSkLz2QHzSgA5w09dIvfFJgDUMkP373f-VVAZmahHalr0GOYojqK41x6E/exec"; // ضع رابط الـ Web App هنا
+
+async function fetchData() {
+  const res = await fetch(API_URL);
+  return res.json();
+}
+
+function renderPlaces(places, ads) {
+  const grid = document.getElementById("placesGrid");
+  grid.innerHTML = "";
+  const activityFilter = document.getElementById("filter-activity").value;
+  const cityFilter = document.getElementById("filter-city").value;
+
+  const filtered = places.filter(p =>
+    (!activityFilter || p["معرف نوع النشاط"] === activityFilter) &&
+    (!cityFilter || p["المدينة"].toString() === cityFilter)
+  );
+
+  filtered.forEach(place => {
+    const statusClass = place["حالة المكان الان"] === "مفتوح الان" ? "open" :
+                        place["حالة المكان الان"] === "مغلق للصلاة" ? "prayer" : "closed";
+
+    const hasAd = ads.some(ad => ad["معرف المكان"] === place["معرف المكان"] && ad["حالة الاعلان"] === "نشط");
+
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML = `
+      <div class="status ${statusClass}"></div>
+      ${hasAd ? '<div class="badge">عرض</div>' : ""}
+      <img src="${place["رابط صورة شعار المكان"] || 'https://via.placeholder.com/150'}" alt="شعار">
+      <h3>${place["اسم المكان"]}</h3>
+      <p>النشاط: ${place["معرف نوع النشاط"]}</p>
+      <p>المدينة: ${place["المدينة"]}</p>
+      <div class="contact">
+        ${place["رقم التواصل"] ? `<a href="tel:${place["رقم التواصل"]}"><i class="fas fa-phone"></i></a>` : ""}
+        ${place["رابط واتساب"] ? `<a href="${place["رابط واتساب"]}" target="_blank"><i class="fab fa-whatsapp"></i></a>` : ""}
+      </div>
+      <button class="btn" onclick="location.href='ads.html?place=${place["معرف المكان"]}'">عرض الإعلانات</button>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+async function init() {
+  const data = await fetchData();
+  const places = data.places;
+  const ads = data.ads;
+
+  // تعبئة الفلاتر
+  const activitySet = [...new Set(places.map(p => p["معرف نوع النشاط"]))];
+  const citySet = [...new Set(places.map(p => p["المدينة"]))];
+  const activitySelect = document.getElementById("filter-activity");
+  const citySelect = document.getElementById("filter-city");
+
+  activitySet.forEach(a => activitySelect.innerHTML += `<option value="${a}">${a}</option>`);
+  citySet.forEach(c => citySelect.innerHTML += `<option value="${c}">${c}</option>`);
+
+  activitySelect.addEventListener("change", () => renderPlaces(places, ads));
+  citySelect.addEventListener("change", () => renderPlaces(places, ads));
+
+  renderPlaces(places, ads);
+}
+
+init();
+setInterval(init, 30000); // تحديث كل 30 ثانية
+</script>
+</body>
+</html>
+

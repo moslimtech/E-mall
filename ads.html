@@ -17,7 +17,7 @@ h2 { text-align: center; margin-bottom: 10px; }
 <div class="ads-grid" id="adsGrid"></div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec"; // ضع رابط الـ Web App هنا
+const API_URL = "YOUR_GOOGLE_SCRIPT_WEBAPP_URL";
 const params = new URLSearchParams(window.location.search);
 const placeId = params.get('place');
 
@@ -34,16 +34,28 @@ async function loadAds() {
 
   grid.innerHTML = '';
   ads.forEach(ad => {
+    let mediaHTML = '';
+    if (ad['رابط يوتيوب']) {
+      mediaHTML = `<iframe src="https://www.youtube.com/embed/${extractYouTubeId(ad['رابط يوتيوب'])}" allowfullscreen></iframe>`;
+    } else if (ad['رابط الصورة']) {
+      mediaHTML = `<img src="${ad['رابط الصورة']}" />`;
+    }
+
     const card = document.createElement('div');
     card.className = 'ad-card';
     card.innerHTML = `
-      ${ad['رابط الصورة'] ? `<img src="${ad['رابط الصورة']}" />` : ''}
-      ${ad['رابط الفيديو'] ? `<iframe src="${ad['رابط الفيديو']}" allowfullscreen></iframe>` : ''}
+      ${mediaHTML}
       <h4>${ad['عنوان العرض'] || ''}</h4>
       <p>${ad['وصف'] || ''}</p>
     `;
     grid.appendChild(card);
   });
+}
+
+function extractYouTubeId(url) {
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=)([^#\&\?]*).*/;
+  const match = url.match(regExp);
+  return (match && match[2].length === 11) ? match[2] : null;
 }
 
 loadAds();

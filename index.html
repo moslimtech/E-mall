@@ -6,7 +6,7 @@
 <title>المول الإلكتروني</title>
 <style>
   body { font-family: 'Cairo', sans-serif; background: #f9f9f9; margin: 0; padding: 10px; }
-  .filters { display: flex; gap: 8px; margin-bottom: 10px; }
+  .filters { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
   select { padding: 6px; font-size: 14px; }
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
   .card { background: #fff; padding: 8px; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); position: relative; text-align: center; }
@@ -38,7 +38,7 @@
 <div class="grid" id="grid"></div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec"; // استبدل بـ Web App URL
+const API_URL = "YOUR_GOOGLE_SCRIPT_WEBAPP_URL"; // استبدل بـ Web App URL
 let allPlaces = [], allAds = [];
 
 async function fetchData() {
@@ -53,8 +53,8 @@ async function fetchData() {
 function updateFilters() {
   const citySelect = document.getElementById('filterCity');
   const activitySelect = document.getElementById('filterActivity');
-  const cities = [...new Set(allPlaces.map(p => p['المدينة']))];
-  const activities = [...new Set(allPlaces.map(p => p['معرف نوع النشاط']))];
+  const cities = [...new Set(allPlaces.map(p => p['المدينة']).filter(Boolean))];
+  const activities = [...new Set(allPlaces.map(p => p['معرف نوع النشاط']).filter(Boolean))];
   
   citySelect.innerHTML = '<option value="">اختر المدينة</option>' + cities.map(c => `<option>${c}</option>`).join('');
   activitySelect.innerHTML = '<option value="">اختر النشاط</option>' + activities.map(a => `<option>${a}</option>`).join('');
@@ -72,14 +72,14 @@ function renderPlaces() {
   );
 
   filtered.forEach(p => {
-    const hasAds = allAds.some(ad => ad['معرف المكان'] === p['معرف المكان'] && ad['حالة الاعلان'] === 'نشط');
+    const hasActiveAds = allAds.some(ad => ad['معرف المكان'] === p['معرف المكان'] && ad['حالة الاعلان'] === 'نشط');
     const statusClass = p['حالة المكان الان'] === 'مغلق' ? 'closed' : (p['حالة المكان الان'] === 'مغلق للصلاة' ? 'prayer' : 'open');
     
     const card = document.createElement('div');
     card.className = 'card';
     card.innerHTML = `
       <div class="status ${statusClass}"></div>
-      ${hasAds ? '<div class="badge">عرض</div>' : ''}
+      ${hasActiveAds ? '<div class="badge">عرض</div>' : ''}
       <img src="${p['رابط صورة شعار المكان'] || 'https://via.placeholder.com/150'}" />
       <h3>${p['اسم المكان']}</h3>
       <p>${p['المكان'] || '-'}</p>
@@ -101,7 +101,7 @@ document.getElementById('filterCity').addEventListener('change', renderPlaces);
 document.getElementById('filterActivity').addEventListener('change', renderPlaces);
 
 fetchData();
-setInterval(fetchData, 30000); // تحديث كل 30 ثانية
+setInterval(fetchData, 30000); // تحديث كل 30 ثانية بدون مسح الفلاتر
 </script>
 
 </body>

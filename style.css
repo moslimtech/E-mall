@@ -1,0 +1,110 @@
+body {
+  font-family: 'Cairo', sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #f4f4f4;
+  direction: rtl;
+}
+
+header {
+  background: #2196f3;
+  color: #fff;
+  padding: 10px;
+  text-align: center;
+}
+
+.filter-bar {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  padding: 10px;
+  background: #fff;
+  flex-wrap: wrap;
+}
+
+.filter-bar select {
+  padding: 8px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 10px;
+  padding: 15px;
+}
+
+.card {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  overflow: hidden;
+  text-align: center;
+  position: relative;
+}
+
+.card img {
+  width: 100%;
+  height: 100px;
+  object-fit: cover;
+}
+
+.card h3 {
+  font-size: 16px;
+  margin: 8px 0 4px;
+}
+
+.card p {
+  font-size: 13px;
+  color: #666;
+  margin: 0;
+}
+
+.status {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  position: absolute;
+  top: 10px;
+  left: 10px;
+}
+
+.status.open { background: green; }
+.status.closed { background: red; }
+.status.prayer { background: orange; }
+
+.badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #e91e63;
+  color: #fff;
+  font-size: 12px;
+  padding: 2px 6px;
+  border-radius: 8px;
+}
+
+.contact-icons {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin: 8px 0;
+}
+
+.contact-icons a {
+  color: #4caf50;
+  font-size: 18px;
+}
+
+button {
+  padding: 6px 10px;
+  background: #2196f3;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  margin: 8px auto;
+  display: block;
+  cursor: pointer;
+}
+

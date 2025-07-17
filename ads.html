@@ -58,7 +58,7 @@
         console.log("Fetched Data:", data);
 
         const adsContainer = document.querySelector(".ads-grid");
-        const ads = data.ads.filter(ad => ad["معرف المكان"] === placeId && ad["حالة الاعلان"] === "نشط");
+        const ads = data.ads.filter(ad => ad["معرف المكان"] === placeId;
 
         if (ads.length === 0) {
           adsContainer.outerHTML = `<div class="no-ads">لا توجد إعلانات نشطة لهذا المكان</div>`;

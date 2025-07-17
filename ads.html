@@ -1,20 +1,77 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>إعلانات المكان</title>
-<link rel="stylesheet" href="style.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>إعلانات المكان</title>
+  <style>
+    body {
+      font-family: 'Cairo', sans-serif;
+      margin: 0;
+      padding: 15px;
+      background: #f4f4f4;
+    }
+    .ads-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 12px;
+    }
+    .ad-card {
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+      padding: 8px;
+      text-align: center;
+    }
+    .ad-card img {
+      width: 100%;
+      height: 120px;
+      object-fit: cover;
+      border-radius: 6px;
+    }
+    .ad-card h4 {
+      margin: 6px 0;
+      font-size: 14px;
+    }
+    .no-ads {
+      text-align: center;
+      margin-top: 40px;
+      font-size: 18px;
+      color: #777;
+    }
+  </style>
+  <script>
+    async function loadAds() {
+      const params = new URLSearchParams(window.location.search);
+      const placeId = params.get("place");
+      const response = await fetch("https://script.google.com/macros/s/AKfycbxkKrHyeEAgSkLz2QHzSgA5w09dIvfFJgDUMkP373f-VVAZmahHalr0GOYojqK41x6E/exec");
+      const data = await response.json();
+
+      const adsContainer = document.querySelector(".ads-grid");
+      const ads = data.ads.filter(ad => ad["معرف المكان"] === placeId && ad["حالة الاعلان"] === "نشط");
+
+      if (ads.length === 0) {
+        document.querySelector(".ads-grid").outerHTML = `<div class="no-ads">لا توجد إعلانات نشطة لهذا المكان</div>`;
+        return;
+      }
+
+      ads.forEach(ad => {
+        const card = document.createElement("div");
+        card.className = "ad-card";
+        card.innerHTML = `
+          <img src="${ad['رابط الصورة'] || 'https://via.placeholder.com/180'}" alt="إعلان">
+          <h4>${ad['عنوان العرض'] || 'إعلان بدون عنوان'}</h4>
+          ${ad['رابط يوتيوب'] ? `<a href="${ad['رابط يوتيوب']}" target="_blank">مشاهدة الفيديو</a>` : ""}
+        `;
+        adsContainer.appendChild(card);
+      });
+    }
+
+    window.onload = loadAds;
+  </script>
 </head>
 <body>
-<header>
-  <h1>الإعلانات</h1>
-  <a href="index.html" class="back-btn">رجوع</a>
-</header>
-<main>
-  <div id="adsGrid" class="grid"></div>
-</main>
-<script src="script.js"></script>
+  <h2 style="text-align:center;">إعلانات المكان</h2>
+  <div class="ads-grid"></div>
 </body>
 </html>

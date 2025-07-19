@@ -1,391 +1,453 @@
-document.addEventListener('DOMContentLoaded', () => {
-    // تأكد من أن هذا الرابط صحيح ويشير إلى نشرك لـ Google Apps Script
-    const jsonUrl = 'https://script.google.com/macros/s/AKfycbxkKrHyeEAgSkLz2QHzSgA5w09dIvfFJgDUMkP373f-VVAZmahHalr0GOYojqK41x6E/exec';
-    
-    // العناصر الرئيسية في DOM
-    const placesContainer = document.getElementById('places-container');
-    const placeDetailsContainer = document.getElementById('place-details-container');
-    const placeDetailName = document.getElementById('place-detail-name');
-    const placeDetailInfo = document.getElementById('place-detail-info');
-    const adsContainer = document.getElementById('ads-container');
-    const backButton = document.getElementById('back-button');
+body {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #2c2c2c;
+    color: #f0f0f0;
+    direction: rtl; /* للغة العربية */
+    text-align: right; /* محاذاة النص لليمين */
+    line-height: 1.6; /* لتحسين قابلية القراءة */
+}
 
-    // عناصر الفلاتر
-    const cityFilter = document.getElementById('city-filter');
-    const areaFilter = document.getElementById('area-filter');
-    const activityTypeFilter = document.getElementById('activity-type-filter');
-    const resetFiltersButton = document.getElementById('reset-filters-button');
+header {
+    background-color: #007bff;
+    color: white;
+    padding: 1rem 0;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
 
-    let allData = null; // لتخزين جميع البيانات التي تم جلبها من Google Sheet
-    let currentPlaceId = null; // لتتبع المكان المعروض حاليا في صفحة التفاصيل
-    let refreshInterval; // لتخزين مؤشر setInterval
+h1, h2, h3, h4 {
+    color: #fff;
+    margin-top: 0;
+    margin-bottom: 0.8rem;
+}
 
-    // دالة للتحقق مما إذا كان الإعلان نشطًا (بناءً على حالة الاعلان فقط)
-    function isAdCurrentlyActive(ad) {
-        return ad['حالة الاعلان'] === 'نشط';
+.container {
+    max-width: 900px;
+    margin: 2rem auto;
+    padding: 1.5rem;
+    background-color: #3a3a3a;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* تنسيق قسم الفلاتر */
+.filters-container {
+    display: flex;
+    flex-wrap: wrap; /* للسماح للعناصر بالانتقال إلى سطر جديد */
+    gap: 15px; /* مسافة بين مجموعات الفلاتر */
+    align-items: flex-end; /* لمحاذاة العناصر للأسفل */
+    justify-content: flex-end; /* محاذاة لليمين في RTL */
+    padding: 1rem 1.5rem;
+    background-color: #4a4a4a; /* لون خلفية مختلف قليلاً */
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1; /* للسماح للمجموعات بالتوسع */
+    min-width: 150px; /* حد أدنى لعرض كل فلتر */
+}
+
+.filters-container label {
+    font-weight: bold;
+    margin-bottom: 5px;
+    color: #e0e0e0;
+}
+
+.filters-container select {
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid #666;
+    background-color: #333;
+    color: #f0f0f0;
+    font-size: 1rem;
+    width: 100%; /* تأكد من أن الـ select يأخذ العرض الكامل للمجموعة */
+    box-sizing: border-box; /* لضمان أن التبطين والحدود لا تزيد عن العرض المحدد */
+}
+
+.filters-container select:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.filters-container button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.2s;
+    white-space: nowrap; /* لمنع الزر من الانقسام */
+}
+
+.filters-container button:hover {
+    background-color: #0056b3;
+}
+
+/* بطاقات الأماكن */
+#places-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); /* 250px كحد أدنى */
+    gap: 1.5rem;
+}
+
+.place-card {
+    background-color: #4a4a4a;
+    padding: 1rem;
+    border-radius: 8px;
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    position: relative;
+    display: flex; /* لترتيب المحتوى داخل الكارت */
+    flex-direction: column; /* ترتيب رأسي */
+    align-items: center; /* محاذاة أفقية للمحتوى */
+}
+
+.place-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+}
+
+.place-card .logo {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 0.8rem;
+    border: 3px solid #007bff;
+}
+
+.place-card h3 {
+    margin: 0.5rem 0;
+    color: #fff;
+    font-size: 1.2rem; /* حجم خط مناسب */
+}
+
+.place-card p {
+    color: #ccc;
+    font-size: 0.9rem;
+    flex-grow: 1; /* للسماح للحالة بأن تأخذ المساحة المتبقية */
+}
+
+/* شارة الإعلان */
+.ad-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: #ffc107; /* لون أصفر */
+    color: #333;
+    padding: 0.3rem 0.6rem;
+    border-radius: 5px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap; /* لمنع الكلمة من الانقسام على سطرين */
+}
+
+/* مؤشر حالة المكان */
+.status-indicator {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+}
+
+.status-open {
+    background-color: #28a745; /* أخضر */
+}
+
+.status-prayer {
+    background-color: #ffc107; /* أصفر */
+}
+
+.status-closed {
+    background-color: #dc3545; /* أحمر */
+}
+
+
+/* تفاصيل المكان */
+#place-details-container {
+    text-align: right;
+}
+
+#place-details-container h2 {
+    color: #007bff;
+    margin-bottom: 1rem;
+    font-size: 1.8rem;
+}
+
+#place-detail-info p {
+    margin: 0.8rem 0; /* مسافة أكبر بين الفقرات */
+    color: #e0e0e0;
+}
+
+#place-detail-info strong {
+    color: #fff;
+}
+
+/* تنسيق الروابط في تفاصيل المكان */
+#place-detail-info a {
+    color: #88B04B; /* لون أخضر فاتح */
+    text-decoration: none;
+    font-weight: bold;
+    display: flex; /* استخدام flex لتحسين المحاذاة */
+    align-items: center;
+    margin-top: 5px;
+    padding: 5px 0; /* مسافة داخلية للضغط بسهولة على الهواتف */
+}
+
+#place-detail-info a:hover {
+    text-decoration: underline;
+}
+
+/* مسافة بين الأيقونة والنص في الروابط */
+.place-details-container p a i,
+.ad-card a i {
+    margin-left: 8px; /* مسافة بين الأيقونة والنص */
+    font-size: 1.1em; /* حجم أكبر قليلاً للأيقونات */
+}
+
+
+/* زر العودة */
+#back-button {
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    padding: 0.7rem 1.2rem;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+    transition: background-color 0.2s;
+    width: auto; /* يجعل الزر لا يأخذ عرض 100% */
+    display: inline-block; /* ليتناسب مع عرضه */
+}
+
+#back-button:hover {
+    background-color: #5a6268;
+}
+
+/* قسم الإعلانات */
+.ads-section {
+    margin-top: 2rem;
+    border-top: 1px solid #555;
+    padding-top: 1.5rem;
+}
+
+.ad-card {
+    background-color: #555555;
+    padding: 1.2rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.ad-card h4 {
+    color: #fff;
+    margin-top: 0;
+    margin-bottom: 0.8rem;
+    border-bottom: 1px solid #777;
+    padding-bottom: 0.5rem;
+    font-size: 1.4rem;
+}
+
+.ad-card p {
+    color: #e0e0e0;
+    line-height: 1.6;
+}
+
+.ad-media-container {
+    display: grid; /* استخدام Grid لترتيب الصور والفيديوهات */
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); /* أعمدة مرنة */
+    gap: 10px;
+    margin-top: 1rem;
+    align-items: center; /* لمحاذاة العناصر عمودياً */
+    justify-content: center; /* لمحاذاة العناصر أفقياً */
+}
+
+.ad-media-container img,
+.ad-media-container video,
+.ad-media-container iframe {
+    width: 100%; /* اجعل الصور والفيديوهات تستجيب لعرض العمود */
+    height: auto;
+    border-radius: 5px;
+    object-fit: cover;
+    background-color: #333; /* خلفية رمادية للصور الفارغة */
+    display: block; /* لإزالة أي مسافات إضافية تحت الصور */
+}
+
+/* تنسيق روابط الإعلانات (واتساب وبريد إلكتروني) */
+.ad-card .ad-links {
+    display: flex;
+    flex-wrap: wrap; /* تسمح للعناصر بالانتقال إلى سطر جديد */
+    gap: 10px; /* مسافة بين الروابط */
+    margin-top: 1rem;
+    justify-content: flex-end; /* لمحاذاة الروابط إلى اليسار في RTL */
+}
+
+.ad-card .ad-links a {
+    background-color: #007bff;
+    color: white;
+    padding: 0.6rem 1rem;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: background-color 0.2s;
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap; /* لمنع انقسام النص */
+}
+
+.ad-card .ad-links a.whatsapp-link {
+    background-color: #25D366; /* لون واتساب */
+}
+
+.ad-card .ad-links a.email-link {
+    background-color: #dc3545; /* لون أحمر للبريد الإلكتروني */
+}
+
+.ad-card .ad-links a:hover {
+    opacity: 0.9;
+}
+
+
+.hidden {
+    display: none;
+}
+
+footer {
+    text-align: center;
+    padding: 1rem;
+    color: #bbb;
+    font-size: 0.9rem;
+    margin-top: 2rem;
+    border-top: 1px solid #444;
+}
+
+/* ======= استجابة التصميم (Responsive design) ======= */
+
+/* للهواتف الصغيرة جداً (أقل من 480 بكسل) */
+@media (max-width: 480px) {
+    body {
+        font-size: 0.9rem;
+    }
+    header h1 {
+        font-size: 1.8rem;
+    }
+    .container {
+        margin: 1rem 0.5rem; /* تقليل الهوامش على الأطراف */
+        padding: 0.8rem;
+    }
+    .filters-container {
+        flex-direction: column; /* جعل الفلاتر عمودية على الشاشات الصغيرة */
+        align-items: stretch; /* لتوسيع العناصر لملء العرض */
+        padding: 1rem;
+    }
+    .filter-group {
+        min-width: unset; /* إزالة الحد الأدنى للعرض */
+        width: 100%; /* جعل كل فلتر يأخذ العرض الكامل */
+    }
+    .filters-container button {
+        width: 100%; /* جعل الزر يأخذ العرض الكامل */
+        margin-top: 10px; /* مسافة أعلى الزر */
+    }
+    #places-container {
+        grid-template-columns: 1fr; /* عمود واحد فقط على الشاشات الصغيرة جداً */
+        gap: 0.8rem;
+    }
+    .place-card {
+        padding: 0.8rem;
+    }
+    .place-card .logo {
+        width: 80px;
+        height: 80px;
+    }
+    .place-card h3 {
+        font-size: 1.1rem;
+    }
+    .ad-badge {
+        font-size: 0.7rem;
+        padding: 0.2rem 0.4rem;
+        gap: 3px;
     }
 
-    // دالة لجلب البيانات من Google Sheet
-    async function fetchData() {
-        console.log('Fetching data...');
-        try {
-            const response = await fetch(jsonUrl);
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            const data = await response.json();
-            console.log('Fetched Data:', data);
-            allData = data; // تحديث البيانات
-
-            // إعادة ملء الفلاتر وعرض الأماكن بعد جلب البيانات الجديدة
-            populateFilters();
-            filterAndDisplayPlaces();
-
-            // إذا كان المستخدم في صفحة تفاصيل مكان، قم بتحديث الإعلانات الخاصة به
-            if (!placeDetailsContainer.classList.contains('hidden') && currentPlaceId) {
-                displayAdsForPlace(currentPlaceId);
-            }
-
-        } catch (error) {
-            console.error('حدث خطأ أثناء جلب البيانات:', error);
-            placesContainer.innerHTML = '<p class="no-results">عذرًا، لم نتمكن من تحميل البيانات. يرجى المحاولة مرة أخرى لاحقًا.</p>';
-            // إيقاف التحديث التلقائي إذا فشل الجلب لمنع طلبات غير ضرورية
-            clearInterval(refreshInterval); 
-        }
+    #place-details-container h2 {
+        font-size: 1.5rem;
+    }
+    #place-detail-info p {
+        font-size: 0.9rem;
+        margin: 0.6rem 0;
+    }
+    #back-button {
+        width: 100%; /* الزر يأخذ عرض 100% على الهواتف */
+        padding: 0.6rem 1rem;
     }
 
-    // دالة لملء خيارات الفلاتر
-    function populateFilters() {
-        // المدن
-        const currentCityValue = cityFilter.value; // حفظ القيمة الحالية
-        cityFilter.innerHTML = '<option value="">كل المدن</option>';
-        allData.cities.forEach(city => {
-            const option = document.createElement('option');
-            option.value = city['IDالمدينة'];
-            option.textContent = city['المدينة'];
-            cityFilter.appendChild(option);
-        });
-        cityFilter.value = currentCityValue; // استعادة القيمة المحفوظة
-
-
-        // تحديث المناطق بناءً على المدينة المختارة حالياً
-        updateAreaFilter();
-
-        // أنواع الأنشطة
-        const currentActivityValue = activityTypeFilter.value; // حفظ القيمة الحالية
-        activityTypeFilter.innerHTML = '<option value="">كل الأنشطة</option>';
-        allData.activityTypes.forEach(type => {
-            const option = document.createElement('option');
-            option.value = type['معرف نوع النشاط'];
-            option.textContent = type['نوع النشاط'];
-            activityTypeFilter.appendChild(option);
-        });
-        activityTypeFilter.value = currentActivityValue; // استعادة القيمة المحفوظة
+    .ad-card h4 {
+        font-size: 1.2rem;
     }
-
-    // دالة لتحديث فلتر المناطق بناءً على المدينة المختارة
-    function updateAreaFilter() {
-        const selectedCityId = cityFilter.value;
-        const currentAreaValue = areaFilter.value; // حفظ القيمة الحالية
-        areaFilter.innerHTML = '<option value="">كل المناطق</option>';
-
-        if (selectedCityId) {
-            // استخدام == للمقارنة لأن IDالمدينة قد يكون رقمًا في البيانات لكن value يكون نصًا
-            const relevantAreas = allData.areas.filter(area => area['IDالمدينة'] == selectedCityId);
-            relevantAreas.forEach(area => {
-                const option = document.createElement('option');
-                option.value = area['IDالمنطقة'];
-                option.textContent = area['المنطقة'];
-                areaFilter.appendChild(option);
-            });
-            areaFilter.disabled = false;
-        } else {
-            areaFilter.disabled = true;
-        }
-        areaFilter.value = currentAreaValue; // استعادة القيمة المحفوظة
-        // إذا كانت القيمة المحفوظة غير موجودة في الخيارات الجديدة، ستصبح القيمة فارغة
-        if (areaFilter.value !== currentAreaValue && areaFilter.options.length > 0) {
-            areaFilter.value = ''; // لضمان عدم وجود قيمة غير موجودة
-        }
+    .ad-card p {
+        font-size: 0.9rem;
     }
-
-    // دالة لتصفية وعرض الأماكن بناءً على الفلاتر المختارة
-    function filterAndDisplayPlaces() {
-        if (!allData) return; // تأكد أن البيانات قد تم جلبها
-
-        const selectedCityId = cityFilter.value;
-        const selectedAreaId = areaFilter.value;
-        const selectedActivityTypeId = activityTypeFilter.value;
-
-        let filteredPlaces = allData.places;
-
-        if (selectedCityId) {
-            filteredPlaces = filteredPlaces.filter(place => place['المدينة'] == selectedCityId);
-        }
-        if (selectedAreaId) {
-            filteredPlaces = filteredPlaces.filter(place => place['المنطقة'] == selectedAreaId);
-        }
-        if (selectedActivityTypeId) {
-            filteredPlaces = filteredPlaces.filter(place => place['معرف نوع النشاط'] == selectedActivityTypeId);
-        }
-
-        displayPlaces(filteredPlaces, allData.ads);
+    .ad-media-container {
+        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); /* أعمدة أصغر للصور */
+        gap: 5px;
     }
-
-    // دالة لتحديد فئة CSS بناءً على حالة المكان
-    function getStatusClass(status) {
-        switch (status) {
-            case 'مفتوح الان':
-                return 'status-open';
-            case 'مغلق للصلاة':
-                return 'status-prayer';
-            case 'مغلق':
-                return 'status-closed';
-            default:
-                return ''; // لا يوجد فئة إذا كانت الحالة غير معروفة
-        }
+    .ad-card .ad-links {
+        justify-content: center; /* لمحاذاة الروابط في المنتصف */
+        gap: 8px;
     }
-
-    // دالة لعرض بطاقات الأماكن
-    function displayPlaces(places, ads) {
-        placesContainer.innerHTML = ''; // مسح أي محتوى سابق
-
-        if (places.length === 0) {
-            placesContainer.innerHTML = '<p class="no-results">لا توجد أماكن مطابقة لمعايير البحث.</p>';
-            return;
-        }
-
-        places.forEach(place => {
-            const card = document.createElement('div');
-            card.className = 'place-card';
-            card.setAttribute('data-place-id', place['معرف المكان']);
-
-            // مؤشر الحالة (مفتوح، مغلق، صلاة)
-            const statusClass = getStatusClass(place['حالة المكان الان']);
-            if (statusClass) {
-                const statusIndicator = document.createElement('div');
-                statusIndicator.className = `status-indicator ${statusClass}`;
-                card.appendChild(statusIndicator);
-            }
-
-            // شارة "يوجد عروض"
-            if (hasAds(place['معرف المكان'], ads)) {
-                const adBadge = document.createElement('span');
-                adBadge.className = 'ad-badge';
-                adBadge.innerHTML = '<i class="fas fa-bullhorn"></i> عروض'; // أيقونة بوق + نص اختياري
-                card.appendChild(adBadge);
-            }
-
-            // شعار المكان
-            const img = document.createElement('img');
-            img.className = 'logo';
-            img.src = place['رابط صورة شعار المكان'] || 'https://via.placeholder.com/100?text=No+Logo'; // صورة افتراضية
-            img.alt = `شعار ${place['اسم المكان']}`;
-            card.appendChild(img);
-
-            // اسم المكان
-            const name = document.createElement('h3');
-            name.textContent = place['اسم المكان'];
-            card.appendChild(name);
-
-            // حالة المكان
-            const status = document.createElement('p');
-            status.textContent = `الحالة: ${place['حالة المكان الان']}`;
-            card.appendChild(status);
-
-            // عند النقر على البطاقة، اعرض تفاصيل المكان
-            card.addEventListener('click', () => showPlaceDetails(place));
-            placesContainer.appendChild(card);
-        });
+    .ad-card .ad-links a {
+        padding: 0.5rem 0.8rem;
+        font-size: 0.9rem;
     }
+}
 
-    // دالة لعرض تفاصيل مكان محدد
-    function showPlaceDetails(place) {
-        // حفظ المكان الحالي لتحديث الإعلانات إذا حدث تحديث للبيانات
-        currentPlaceId = place['معرف المكان'];
-
-        placesContainer.classList.add('hidden');
-        document.getElementById('filters-container').classList.add('hidden'); // إخفاء الفلاتر
-        placeDetailsContainer.classList.remove('hidden');
-
-        placeDetailName.textContent = place['اسم المكان'];
-        placeDetailInfo.innerHTML = `
-            <p><strong>رقم التواصل:</strong> ${place['رقم التواصل'] || 'غير متوفر'}</p>
-            <p><strong>البريد الإلكتروني:</strong> ${place['الإيميل'] || 'غير متوفر'}</p>
-            <p><strong>المكان:</strong> ${getPlaceLocationName(place['المكان'])} - الدور: ${place['الدور'] || 'غير متوفر'}</p>
-            <p><strong>المدينة:</strong> ${getCityName(place['المدينة'])}</p>
-            <p><strong>المنطقة:</strong> ${getAreaName(place['المنطقة'])}</p>
-            <p><strong>خدمة التوصيل:</strong> ${place['يوجد خدمة توصيل'] || 'غير محدد'}</p>
-            ${place['رابط واتساب'] ? `<p><a href="${place['رابط واتساب']}" target="_blank"><i class="fab fa-whatsapp"></i> تواصل</a></p>` : ''}
-            ${place['الموقع'] ? `<p><a href="https://www.google.com/maps/search/?api=1&query=${place['الموقع']}" target="_blank"><i class="fas fa-map-marked-alt"></i> الموقع</a></p>` : ''}
-        `;
-
-        displayAdsForPlace(place['معرف المكان']);
+/* للهواتف المتوسطة (بين 481 بكسل و 768 بكسل) */
+@media (min-width: 481px) and (max-width: 768px) {
+    .container {
+        margin: 1.5rem;
+        padding: 1rem;
     }
-
-    // دالة لعرض الإعلانات الخاصة بمكان معين
-    function displayAdsForPlace(placeId) {
-        adsContainer.innerHTML = '';
-        const relevantAds = allData.ads.filter(ad => ad['معرف المكان'] === placeId && isAdCurrentlyActive(ad));
-
-        console.log(`Displaying ads for Place ID: ${placeId}`);
-        console.log(`Found ${relevantAds.length} active ads for this place.`);
-
-        if (relevantAds.length === 0) {
-            adsContainer.innerHTML = '<p>لا توجد إعلانات نشطة لهذا المكان حاليًا.</p>';
-            return;
-        }
-
-        relevantAds.forEach(ad => {
-            const adCard = document.createElement('div');
-            adCard.className = 'ad-card';
-
-            const adTitle = document.createElement('h4');
-            adTitle.textContent = ad['عنوان العرض'] || 'إعلان بدون عنوان';
-            adCard.appendChild(adTitle);
-
-            if (ad['وصف']) {
-                const adDescription = document.createElement('p');
-                adDescription.textContent = ad['وصف'];
-                adCard.appendChild(adDescription);
-            }
-
-            const mediaContainer = document.createElement('div');
-            mediaContainer.className = 'ad-media-container';
-
-            // عرض الصور الرئيسية
-            if (ad['رابط الصورة']) {
-                const img = document.createElement('img');
-                img.src = ad['رابط الصورة'];
-                img.alt = `صورة الإعلان ${ad['عنوان العرض'] || ''}`;
-                mediaContainer.appendChild(img);
-            }
-            // عرض الفيديو الرئيسي
-            if (ad['رابط الفيديو']) {
-                const video = document.createElement('video');
-                video.controls = true;
-                video.src = ad['رابط الفيديو'];
-                mediaContainer.appendChild(video);
-            }
-            // عرض فيديو يوتيوب
-            if (ad['رابط يوتيوب']) {
-                const youtubeUrl = ad['رابط يوتيوب'];
-                const videoIdMatch = youtubeUrl.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&?]+)/);
-                if (videoIdMatch && videoIdMatch[1] && videoIdMatch[1] !== '0') {
-                    const videoId = videoIdMatch[1];
-                    const iframe = document.createElement('iframe');
-                    iframe.width = "100%";
-                    iframe.height = "315";
-                    iframe.src = `https://www.youtube.com/embed/${videoId}`; // رابط يوتيوب القياسي للتضمين
-                    iframe.frameBorder = "0";
-                    iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
-                    iframe.allowFullscreen = true;
-                    mediaContainer.appendChild(iframe);
-                    console.log(`YouTube video embedded for Ad ID: ${ad['معرف الإعلان']} with Video ID: ${videoId}`);
-                } else {
-                    console.warn(`Invalid YouTube URL or Video ID for Ad ID: ${ad['معرف الإعلان']}: ${youtubeUrl}`);
-                }
-            }
-
-
-            // إضافة صور إضافية إذا وجدت (صورة2 إلى صورة8)
-            for (let i = 2; i <= 8; i++) {
-                const imgKey = `رابط صورة${i}`;
-                if (ad[imgKey]) {
-                    const img = document.createElement('img');
-                    img.src = ad[imgKey];
-                    img.alt = `صورة إعلان إضافية ${i}`;
-                    mediaContainer.appendChild(img);
-                }
-            }
-
-            if (mediaContainer.children.length > 0) {
-                adCard.appendChild(mediaContainer);
-            }
-
-            // حاوية لروابط الإعلان (واتساب، بريد إلكتروني)
-            const adLinksContainer = document.createElement('div');
-            adLinksContainer.className = 'ad-links';
-
-            if (ad['رابط واتساب']) {
-                const whatsappLink = document.createElement('a');
-                whatsappLink.href = ad['رابط واتساب'];
-                whatsappLink.target = '_blank';
-                whatsappLink.innerHTML = '<i class="fab fa-whatsapp"></i> واتساب';
-                whatsappLink.classList.add('whatsapp-link'); // إضافة كلاس لتلوين واتساب
-                adLinksContainer.appendChild(whatsappLink);
-            }
-            if (ad['البريد الالكتروني']) {
-                const emailLink = document.createElement('a');
-                emailLink.href = `mailto:${ad['البريد الالكتروني']}`;
-                emailLink.innerHTML = '<i class="fas fa-envelope"></i> بريد إلكتروني';
-                emailLink.classList.add('email-link'); // إضافة كلاس لتلوين البريد
-                adLinksContainer.appendChild(emailLink);
-            }
-            
-            if (adLinksContainer.children.length > 0) {
-                adCard.appendChild(adLinksContainer);
-            }
-
-            adsContainer.appendChild(adCard);
-        });
+    .filters-container {
+        padding: 1rem;
     }
-
-    // دوال مساعدة لجلب الأسماء من الـ IDs
-    function getCityName(cityId) {
-        const city = allData.cities.find(c => c['IDالمدينة'] == cityId);
-        return city ? city['المدينة'] : 'غير معروفة';
+    #places-container {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 1.2rem;
     }
-
-    function getAreaName(areaId) {
-        const area = allData.areas.find(a => a['IDالمنطقة'] == areaId);
-        return area ? area['المنطقة'] : 'غير معروفة';
+    .place-card .logo {
+        width: 90px;
+        height: 90px;
     }
-
-    function getPlaceLocationName(locationId) {
-        const location = allData.locations.find(l => l['idالمكان'] == locationId);
-        return location ? location['المكان'] : 'غير معروف';
+    #place-details-container h2 {
+        font-size: 1.6rem;
     }
+    .ad-media-container {
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    }
+    .ad-card .ad-links {
+        justify-content: flex-end; /* تبقى محاذاة لليسار في RTL */
+    }
+}
 
-    // معالج حدث لزر "العودة إلى الأماكن"
-    backButton.addEventListener('click', () => {
-        currentPlaceId = null; // إعادة تعيين معرف المكان عند العودة
-        placeDetailsContainer.classList.add('hidden');
-        document.getElementById('filters-container').classList.remove('hidden'); // إظهار الفلاتر
-        placesContainer.classList.remove('hidden');
-        filterAndDisplayPlaces(); // إعادة عرض الأماكن مع تطبيق الفلاتر الحالية
-    });
-
-    // ======= معالجة أحداث الفلاتر =======
-    cityFilter.addEventListener('change', () => {
-        // لا نحتاج لحفظ القيمة في dataset.selectedValue بعد الآن، لأن populateFilters ستقوم باستعادتها
-        // ولكن لا يزال تحديث فلتر المناطق وتطبيق الفلاتر مطلوبًا
-        updateAreaFilter();
-        filterAndDisplayPlaces();
-    });
-
-    areaFilter.addEventListener('change', () => {
-        filterAndDisplayPlaces();
-    });
-
-    activityTypeFilter.addEventListener('change', () => {
-        filterAndDisplayPlaces();
-    });
-
-    // معالج حدث لزر "إعادة تعيين" الفلاتر
-    resetFiltersButton.addEventListener('click', () => {
-        cityFilter.value = '';
-        areaFilter.value = '';
-        activityTypeFilter.value = '';
-        updateAreaFilter(); // لإعادة تعطيل فلتر المناطق وتصفيره
-        filterAndDisplayPlaces();
-    });
-
-    // ======= التحديث التلقائي للبيانات =======
-    // جلب البيانات عند تحميل الصفحة لأول مرة
-    fetchData();
-
-    // تحديث البيانات كل 30 ثانية (30000 ميلي ثانية)
-    // يتم حفظ المؤشر في `refreshInterval` لإمكانية إيقافه لاحقاً إذا لزم الأمر
-    refreshInterval = setInterval(fetchData, 30000);
-});
+/* للشاشات الكبيرة (أكبر من 992 بكسل - للحالات التي قد يكون فيها تخطيط مختلف) */
+@media (min-width: 992px) {
+    .container {
+        padding: 2rem;
+    }
+    #places-container {
+        grid-template-columns: repeat(3, 1fr); /* 3 أعمدة ثابتة على الشاشات الكبيرة */
+        gap: 2rem;
+    }
+}

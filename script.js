@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     // تأكد من أن هذا الرابط صحيح ويشير إلى نشرك لـ Google Apps Script
     // هذا الرابط يجب أن يعرض بيانات JSON مباشرة عند فتحه في المتصفح
-    const jsonUrl = 'https://script.google.com/macros/s/AKfycbxkKrHyeEAgSkLz2QHzSgA5w09dIvfFJgDUMkP373f-VVAZmahHalr0GOYojqK41x6E/exec';
+    const jsonUrl = 'https://script.google.com/macros/s/AKfycbxkKrHyeEAgSkLz2QHzSgA5w09dIvfFJgDUMkP373f-VVAZmahHalr0GOYojqK41x6E/exec'; // هذا هو نفس الرابط الذي استخدمته في JSON السابق
 
     // العناصر الرئيسية في DOM
     const placesContainer = document.getElementById('places-container');
@@ -82,7 +82,7 @@ document.addEventListener('DOMContentLoaded', () => {
             allData.activityTypes.forEach(type => {
                 const option = document.createElement('option');
                 option.value = type['معرف نوع النشاط'];
-                option.textContent = type['نوع النشاط'];
+                option.textContent = type['اسم نوع النشاط']; // استخدام "اسم نوع النشاط" للعرض
                 activityTypeFilter.appendChild(option);
             });
         }
@@ -138,7 +138,7 @@ document.addEventListener('DOMContentLoaded', () => {
             filteredPlaces = filteredPlaces.filter(place => place['المنطقة'] == selectedAreaId);
         }
         if (selectedActivityTypeId) {
-            filteredPlaces = filteredPlaces.filter(place => place['معرف نوع النشاط'] == selectedActivityTypeId);
+            filteredPlaces = filteredPlaces.filter(place => String(place['معرف نوع النشاط']).trim() == String(selectedActivityTypeId).trim()); // مقارنة مع trim
         }
 
         displayPlaces(filteredPlaces, allData.ads);
@@ -237,7 +237,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <p><strong>المنطقة:</strong> ${getAreaName(place['المنطقة'])}</p>
             <p><strong>نوع النشاط:</strong> ${getActivityTypeName(place['معرف نوع النشاط']) || 'غير محدد'}</p> <p><strong>خدمة التوصيل:</strong> ${place['يوجد خدمة توصيل'] || 'غير محدد'}</p>
             ${place['رابط واتساب'] && place['رابط واتساب'].startsWith('http') ? `<p><a href="${place['رابط واتساب']}" target="_blank"><i class="fab fa-whatsapp"></i> تواصل عبر واتساب</a></p>` : ''}
-            ${place['الموقع'] && place['الموقع'].split(',').length === 2 ? `<p><a href="https://www.google.com/maps/search/?api=1&query=${place['الموقع']}" target="_blank"><i class="fas fa-map-marked-alt"></i> عرض الموقع على الخريطة</a></p>` : ''}
+            ${place['الموقع'] && place['الموقع'].split(',').length === 2 ? `<p><a href="https://www.google.com/maps/search/?api=1&query=$?q=${place['الموقع']}" target="_blank"><i class="fas fa-map-marked-alt"></i> عرض الموقع على الخريطة</a></p>` : ''}
         `;
 
         displayAdsForPlace(place['معرف المكان']);
@@ -295,7 +295,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 mediaContainer.appendChild(video);
             }
             // عرض فيديو يوتيوب
-            // **هام: تأكد أن عمود "رابط يوتيوب" يحتوي على روابط يوتيوب فعلية (youtube.com4...) وليس روابط Googleusercontent أو Drive**
+            // **هام: تأكد أن عمود "رابط يوتيوب" يحتوي على روابط يوتيوب فعلية (youtube.com/embed/...) وليس روابط Googleusercontent أو Drive**
             if (ad['رابط يوتيوب'] && ad['رابط يوتيوب'].startsWith('http')) {
                 const youtubeUrl = ad['رابط يوتيوب'];
                 const videoIdMatch = youtubeUrl.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&?]+)/);
@@ -304,7 +304,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const iframe = document.createElement('iframe');
                     iframe.width = "100%";
                     iframe.height = "315";
-                    iframe.src = `http://googleusercontent.com/youtube.com/embed/${videoId}`; // رابط يوتيوب القياسي للتضمين
+                    iframe.src = `https://www.youtube.com/embed/${videoId}`; // رابط يوتيوب القياسي للتضمين
                     iframe.frameBorder = "0";
                     iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
                     iframe.allowFullscreen = true;
@@ -380,8 +380,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // الدالة الجديدة: لجلب اسم نوع النشاط
     function getActivityTypeName(activityTypeId) {
         if (!allData || !allData.activityTypes) return 'غير معروف';
-        const activityType = allData.activityTypes.find(type => type['معرف نوع النشاط'] == activityTypeId);
-        return activityType ? activityType['نوع النشاط'] : 'غير معروف';
+        // استخدام toString().trim() لضمان المقارنة الصحيحة وإزالة المسافات الزائدة
+        const activityType = allData.activityTypes.find(type =>
+            type['معرف نوع النشاط'] && activityTypeId &&
+            String(type['معرف نوع النشاط']).trim() == String(activityTypeId).trim()
+        );
+        return activityType ? activityType['اسم نوع النشاط'] : 'غير معروف'; // استخدام "اسم نوع النشاط" للعرض
     }
 
     // معالج حدث لزر "العودة إلى الأماكن"

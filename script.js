@@ -67,8 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (hasAds(place['معرف المكان'], ads)) {
                 const adBadge = document.createElement('span');
                 adBadge.className = 'ad-badge';
-                // استخدام أيقونة Font Awesome مع نص اختياري
-                adBadge.innerHTML = '<i class="fas fa-bullhorn"></i> عروض';
+                adBadge.innerHTML = '<i class="fas fa-bullhorn"></i> عروض'; // أيقونة بوق + نص اختياري
                 card.appendChild(adBadge);
             }
 
@@ -104,7 +103,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <p><strong>المنطقة:</strong> ${getAreaName(place['المنطقة'])}</p>
             <p><strong>خدمة التوصيل:</strong> ${place['يوجد خدمة توصيل'] || 'غير محدد'}</p>
             ${place['رابط واتساب'] ? `<p><a href="${place['رابط واتساب']}" target="_blank"><i class="fab fa-whatsapp"></i> تواصل</a></p>` : ''}
-            ${place['الموقع'] ? `<p><a href="http://googleusercontent.com/maps.google.com/9{place['الموقع']}" target="_blank"><i class="fas fa-map-marked-alt"></i> الموقع</a></p>` : ''}
+            ${place['الموقع'] ? `<p><a href="https://www.google.com/maps/search/?api=1&query=${place['الموقع']}" target="_blank"><i class="fas fa-map-marked-alt"></i> الموقع</a></p>` : ''}
         `;
 
         displayAdsForPlace(place['معرف المكان']);
@@ -153,29 +152,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 video.src = ad['رابط الفيديو'];
                 mediaContainer.appendChild(video);
             }
-            // عرض فيديو يوتيوب (مع تحسين للتعامل مع الروابط غير الصالحة)
-            if (ad['رابط يوتيوب']) {
-                const youtubeUrl = ad['رابط يوتيub']; // لاحظ: يبدو أن 'رابط يوتيوب' غير موجود في بياناتك الأخيرة، تأكد من الاسم الصحيح
-                // يجب أن يكون 'رابط يوتيوب' وليس 'رابط يوتيوب' في الـ JSON إذا كان هذا هو ما تقصده
-                // أو تأكد من أن الحقل 'رابط يوتيub' موجود
-                if (youtubeUrl) { // تأكد أن الرابط موجود قبل محاولة تحليله
-                    const videoIdMatch = youtubeUrl.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&?]+)/);
-                    if (videoIdMatch && videoIdMatch[1] && videoIdMatch[1] !== '0') {
-                        const videoId = videoIdMatch[1];
-                        const iframe = document.createElement('iframe');
-                        iframe.width = "100%";
-                        iframe.height = "315";
-                        iframe.src = `https://www.youtube.com/embed/${videoId}`; // رابط يوتيوب القياسي للتضمين
-                        iframe.frameBorder = "0";
-                        iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
-                        iframe.allowFullscreen = true;
-                        mediaContainer.appendChild(iframe);
-                        console.log(`YouTube video embedded for Ad ID: ${ad['معرف الإعلان']} with Video ID: ${videoId}`);
-                    } else {
-                        console.warn(`Invalid YouTube URL or Video ID for Ad ID: ${ad['معرف الإعلان']}: ${youtubeUrl}`);
-                    }
+            // عرض فيديو يوتيوب
+            if (ad['رابط يوتيوب']) { // تأكد من اسم الحقل الصحيح في JSON
+                const youtubeUrl = ad['رابط يوتيوب'];
+                const videoIdMatch = youtubeUrl.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&?]+)/);
+                if (videoIdMatch && videoIdMatch[1] && videoIdMatch[1] !== '0') {
+                    const videoId = videoIdMatch[1];
+                    const iframe = document.createElement('iframe');
+                    iframe.width = "100%";
+                    iframe.height = "315";
+                    iframe.src = `https://www.youtube.com/embed/${videoId}`; // رابط يوتيوب القياسي للتضمين
+                    iframe.frameBorder = "0";
+                    iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
+                    iframe.allowFullscreen = true;
+                    mediaContainer.appendChild(iframe);
+                    console.log(`YouTube video embedded for Ad ID: ${ad['معرف الإعلان']} with Video ID: ${videoId}`);
                 } else {
-                    console.log(`YouTube URL is missing for Ad ID: ${ad['معرف الإعلان']}`);
+                    console.warn(`Invalid YouTube URL or Video ID for Ad ID: ${ad['معرف الإعلان']}: ${youtubeUrl}`);
                 }
             }
 
@@ -195,6 +188,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 adCard.appendChild(mediaContainer);
             }
 
+            // حاوية للروابط (لتحسين التنسيق المتجاوب)
+            const adLinksContainer = document.createElement('div');
+            adLinksContainer.className = 'ad-links';
 
             // روابط إضافية (باستخدام الأيقونات)
             if (ad['رابط واتساب']) {
@@ -202,15 +198,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 whatsappLink.href = ad['رابط واتساب'];
                 whatsappLink.target = '_blank';
                 whatsappLink.innerHTML = '<i class="fab fa-whatsapp"></i> واتساب';
-                whatsappLink.classList.add('whatsapp-link'); // إضافة كلاس لتلوين واتساب
-                adCard.appendChild(whatsappLink);
+                whatsappLink.classList.add('whatsapp-link');
+                adLinksContainer.appendChild(whatsappLink);
             }
             if (ad['البريد الالكتروني']) {
                 const emailLink = document.createElement('a');
                 emailLink.href = `mailto:${ad['البريد الالكتروني']}`;
                 emailLink.innerHTML = '<i class="fas fa-envelope"></i> بريد إلكتروني';
-                emailLink.classList.add('email-link'); // إضافة كلاس لتلوين البريد
-                adCard.appendChild(emailLink);
+                emailLink.classList.add('email-link');
+                adLinksContainer.appendChild(emailLink);
+            }
+            
+            // أضف حاوية الروابط إلى بطاقة الإعلان فقط إذا كان هناك روابط
+            if (adLinksContainer.children.length > 0) {
+                adCard.appendChild(adLinksContainer);
             }
 
             adsContainer.appendChild(adCard);

@@ -1,34 +1,55 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>دليل الأماكن والإعلانات</title>
+    <title>دليل الأماكن</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
     <header>
         <h1>دليل الأماكن</h1>
     </header>
     <main>
-        <div id="places-container" class="grid-container">
+        <div id="filters-container" class="container filters-container">
+            <div class="filter-group">
+                <label for="city-filter">المدينة:</label>
+                <select id="city-filter">
+                    <option value="">كل المدن</option>
+                </select>
             </div>
-        <div id="place-details-container" class="hidden">
+            <div class="filter-group">
+                <label for="area-filter">المنطقة:</label>
+                <select id="area-filter" disabled>
+                    <option value="">كل المناطق</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="activity-type-filter">نوع النشاط:</label>
+                <select id="activity-type-filter">
+                    <option value="">كل الأنشطة</option>
+                </select>
+            </div>
+            <button id="reset-filters-button">إعادة تعيين</button>
+        </div>
+
+        <div id="places-container" class="container">
+            </div>
+
+        <div id="place-details-container" class="container hidden">
             <button id="back-button">العودة إلى الأماكن</button>
             <h2 id="place-detail-name"></h2>
             <div id="place-detail-info"></div>
             <h3>إعلانات المكان</h3>
-            <div id="ads-container" class="grid-container">
+            <div id="ads-container" class="ads-section">
                 </div>
         </div>
     </main>
     <footer>
-        <p>&copy; 2025 دليل الأماكن. جميع الحقوق محفوظة.</p>
+        <p>© 2025 دليل الأماكن. جميع الحقوق محفوظة.</p>
     </footer>
+
     <script src="script.js"></script>
 </body>
 </html>

@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // دالة للتحقق مما إذا كان الإعلان نشطًا (بناءً على حالة الاعلان فقط)
     function isAdCurrentlyActive(ad) {
         // يمكنك إضافة منطق للتحقق من تاريخ بداية ونهاية الإعلان هنا إذا أردت
-        return ad['حالة الاعلان'] === 'نشط';
+        return ad['حالة الاعلان'] === 'نشط'; //
     }
 
     // دالة لجلب البيانات من Google Sheet
@@ -98,12 +98,15 @@ document.addEventListener('DOMContentLoaded', () => {
         // التأكد من وجود allData و allData.areas قبل محاولة الفلترة
         if (selectedCityId && allData && allData.areas) {
             const relevantAreas = allData.areas.filter(area => area['IDالمدينة'] == selectedCityId);
-            relevantAreas.forEach(area => {
-                const option = document.createElement('option');
-                option.value = area['IDالمنطقة'];
-                option.textContent = area['المنطقة'];
-                areaFilter.appendChild(option);
-            });
+            // التحقق من أن relevantAreas ليست undefined قبل استخدام forEach
+            if (relevantAreas && relevantAreas.length > 0) {
+                relevantAreas.forEach(area => {
+                    const option = document.createElement('option');
+                    option.value = area['IDالمنطقة'];
+                    option.textContent = area['المنطقة'];
+                    areaFilter.appendChild(option);
+                });
+            }
             areaFilter.disabled = false;
         } else {
             areaFilter.disabled = true; // تعطيل فلتر المناطق إذا لم يتم اختيار مدينة
@@ -195,6 +198,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const img = document.createElement('img');
             img.className = 'logo';
             // استخدام رابط صورة الشعار، أو صورة افتراضية
+            // **هام: تأكد أن روابط الصور تبدأ بـ http/https وليست روابط Googleusercontent الداخلية**
             img.src = place['رابط صورة شعار المكان'] && place['رابط صورة شعار المكان'].startsWith('http') ? place['رابط صورة شعار المكان'] : 'https://via.placeholder.com/100?text=No+Logo';
             img.alt = `شعار ${place['اسم المكان']}`;
             card.appendChild(img);
@@ -231,7 +235,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <p><strong>المكان:</strong> ${getPlaceLocationName(place['المكان'])} - الدور: ${place['الدور'] || 'غير متوفر'}</p>
             <p><strong>المدينة:</strong> ${getCityName(place['المدينة'])}</p>
             <p><strong>المنطقة:</strong> ${getAreaName(place['المنطقة'])}</p>
-            <p><strong>خدمة التوصيل:</strong> ${place['يوجد خدمة توصيل'] || 'غير محدد'}</p>
+            <p><strong>نوع النشاط:</strong> ${getActivityTypeName(place['معرف نوع النشاط']) || 'غير محدد'}</p> <p><strong>خدمة التوصيل:</strong> ${place['يوجد خدمة توصيل'] || 'غير محدد'}</p>
             ${place['رابط واتساب'] && place['رابط واتساب'].startsWith('http') ? `<p><a href="${place['رابط واتساب']}" target="_blank"><i class="fab fa-whatsapp"></i> تواصل عبر واتساب</a></p>` : ''}
             ${place['الموقع'] && place['الموقع'].split(',').length === 2 ? `<p><a href="https://www.google.com/maps/search/?api=1&query=${place['الموقع']}" target="_blank"><i class="fas fa-map-marked-alt"></i> عرض الموقع على الخريطة</a></p>` : ''}
         `;
@@ -275,6 +279,7 @@ document.addEventListener('DOMContentLoaded', () => {
             mediaContainer.className = 'ad-media-container';
 
             // عرض الصور الرئيسية
+            // **هام: تأكد أن روابط الصور تبدأ بـ http/https وليست روابط Googleusercontent الداخلية**
             if (ad['رابط الصورة'] && ad['رابط الصورة'].startsWith('http')) {
                 const img = document.createElement('img');
                 img.src = ad['رابط الصورة'];
@@ -282,6 +287,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 mediaContainer.appendChild(img);
             }
             // عرض الفيديو الرئيسي
+            // **هام: تأكد أن روابط الفيديو تبدأ بـ http/https وليست روابط Google Drive أو Googleusercontent الداخلية**
             if (ad['رابط الفيديو'] && ad['رابط الفيديو'].startsWith('http')) {
                 const video = document.createElement('video');
                 video.controls = true;
@@ -289,6 +295,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 mediaContainer.appendChild(video);
             }
             // عرض فيديو يوتيوب
+            // **هام: تأكد أن عمود "رابط يوتيوب" يحتوي على روابط يوتيوب فعلية (https://www.youtube.com/watch?v=...) وليس روابط Googleusercontent أو Drive**
             if (ad['رابط يوتيوب'] && ad['رابط يوتيوب'].startsWith('http')) {
                 const youtubeUrl = ad['رابط يوتيوب'];
                 const videoIdMatch = youtubeUrl.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&?]+)/);
@@ -368,6 +375,13 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!allData || !allData.locations) return 'غير معروف';
         const location = allData.locations.find(l => l['idالمكان'] == locationId);
         return location ? location['المكان'] : 'غير معروف';
+    }
+
+    // الدالة الجديدة: لجلب اسم نوع النشاط
+    function getActivityTypeName(activityTypeId) {
+        if (!allData || !allData.activityTypes) return 'غير معروف';
+        const activityType = allData.activityTypes.find(type => type['معرف نوع النشاط'] == activityTypeId);
+        return activityType ? activityType['نوع النشاط'] : 'غير معروف';
     }
 
     // معالج حدث لزر "العودة إلى الأماكن"

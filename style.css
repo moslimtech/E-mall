@@ -1,10 +1,11 @@
 body {
-    font-family: 'Cairo', sans-serif;
+    font-family: 'Arial', sans-serif;
     margin: 0;
-    background-color: #f4f4f4;
-    color: #333;
-    direction: rtl;
-    text-align: right;
+    padding: 0;
+    background-color: #2c2c2c;
+    color: #f0f0f0;
+    direction: rtl; /* للغة العربية */
+    text-align: right; /* محاذاة النص لليمين */
 }
 
 header {
@@ -12,73 +13,84 @@ header {
     color: white;
     padding: 1rem 0;
     text-align: center;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-main {
-    padding: 20px;
-    max-width: 1200px;
-    margin: 20px auto;
-    background-color: #fff;
+.container {
+    max-width: 900px;
+    margin: 2rem auto;
+    padding: 1.5rem;
+    background-color: #3a3a3a;
     border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
-.grid-container {
+/* بطاقات الأماكن */
+#places-container {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1.5rem;
 }
 
-.place-card, .ad-card {
-    background-color: #fff;
-    border: 1px solid #ddd;
+.place-card {
+    background-color: #4a4a4a;
+    padding: 1rem;
     border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    transition: transform 0.2s, border-color 0.2s;
-    cursor: pointer;
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 15px;
     text-align: center;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    position: relative; /* لتحديد موقع شارة الإعلان والحالة */
 }
 
-.place-card:hover, .ad-card:hover {
+.place-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
 }
 
-.place-card img.logo {
-    max-width: 100px;
-    max-height: 100px;
+.place-card .logo {
+    width: 100px;
+    height: 100px;
     border-radius: 50%;
     object-fit: cover;
-    margin-bottom: 10px;
-    border: 2px solid #eee;
+    margin-bottom: 0.8rem;
+    border: 3px solid #007bff;
 }
 
-.place-card h3, .ad-card h4 {
-    margin: 10px 0;
-    color: #007bff;
+.place-card h3 {
+    margin: 0.5rem 0;
+    color: #fff;
 }
 
-.place-card p, .ad-card p {
-    font-size: 0.9em;
-    color: #555;
-    margin-bottom: 5px;
+.place-card p {
+    color: #ccc;
+    font-size: 0.9rem;
 }
 
-.status-indicator {
-    width: 100%;
-    height: 8px;
+/* شارة الإعلان */
+.ad-badge {
     position: absolute;
-    top: 0;
-    left: 0;
-    border-top-left-radius: 8px;
-    border-top-right-radius: 8px;
+    top: 10px;
+    right: 10px; /* للغة العربية */
+    background-color: #ffc107; /* لون أصفر */
+    color: #333;
+    padding: 0.3rem 0.6rem;
+    border-radius: 5px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    display: flex; /* لعرض الأيقونة والنص جنبًا إلى جنب */
+    align-items: center; /* لمحاذاة عمودية */
+    gap: 5px; /* مسافة بين الأيقونة والنص */
+}
+
+/* مؤشر حالة المكان */
+.status-indicator {
+    position: absolute;
+    top: 10px;
+    left: 10px; /* للغة العربية */
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    border: 2px solid #fff;
 }
 
 .status-open {
@@ -93,56 +105,57 @@ main {
     background-color: #dc3545; /* أحمر */
 }
 
-.ad-badge {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    background-color: #ff5722; /* برتقالي مميز */
-    color: white;
-    padding: 4px 8px;
-    border-radius: 5px;
-    font-size: 0.8em;
-    font-weight: bold;
-    z-index: 10;
-}
 
-/* Ad Details Page Styling */
+/* تفاصيل المكان */
 #place-details-container {
-    padding: 20px;
-    border: 1px solid #eee;
-    border-radius: 8px;
-    background-color: #f9f9f9;
+    text-align: right;
 }
 
 #place-details-container h2 {
     color: #007bff;
-    margin-bottom: 15px;
-    text-align: center;
-}
-
-#place-details-container h3 {
-    color: #333;
-    margin-top: 30px;
-    margin-bottom: 15px;
-    text-align: center;
+    margin-bottom: 1rem;
 }
 
 #place-detail-info p {
-    font-size: 1.1em;
-    line-height: 1.6;
-    margin-bottom: 10px;
-    text-align: right;
+    margin: 0.5rem 0;
+    color: #e0e0e0;
 }
 
+#place-detail-info strong {
+    color: #fff;
+}
+
+/* تنسيق الروابط في تفاصيل المكان */
+#place-detail-info a {
+    color: #88B04B; /* لون أخضر فاتح */
+    text-decoration: none;
+    font-weight: bold;
+    display: inline-flex; /* لجعل الأيقونة والنص في سطر واحد */
+    align-items: center; /* لمحاذاة عمودية */
+    margin-top: 5px;
+}
+
+#place-detail-info a:hover {
+    text-decoration: underline;
+}
+
+/* مسافة بين الأيقونة والنص في الروابط */
+.place-details-container p a i,
+.ad-card a i {
+    margin-left: 8px; /* مسافة بين الأيقونة والنص (أيقونات Font Awesome) */
+}
+
+
+/* زر العودة */
 #back-button {
     background-color: #6c757d;
     color: white;
     border: none;
-    padding: 10px 15px;
+    padding: 0.7rem 1.2rem;
     border-radius: 5px;
     cursor: pointer;
-    font-size: 1em;
-    margin-bottom: 20px;
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
     transition: background-color 0.2s;
 }
 
@@ -150,80 +163,111 @@ main {
     background-color: #5a6268;
 }
 
+/* قسم الإعلانات */
+.ads-section {
+    margin-top: 2rem;
+    border-top: 1px solid #555;
+    padding-top: 1.5rem;
+}
+
 .ad-card {
-    border: 1px solid #007bff;
-    box-shadow: 0 2px 5px rgba(0, 123, 255, 0.2);
-    padding: 20px;
+    background-color: #555555;
+    padding: 1.2rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
-.ad-card img {
-    max-width: 100%;
-    height: auto;
-    border-radius: 5px;
-    margin-bottom: 15px;
+.ad-card h4 {
+    color: #fff;
+    margin-top: 0;
+    margin-bottom: 0.8rem;
+    border-bottom: 1px solid #777;
+    padding-bottom: 0.5rem;
 }
 
-.ad-card video {
-    max-width: 100%;
-    height: auto;
-    border-radius: 5px;
-    margin-bottom: 15px;
+.ad-card p {
+    color: #e0e0e0;
+    line-height: 1.6;
 }
 
-.ad-card .ad-media-container {
-    width: 100%;
+.ad-media-container {
     display: flex;
-    justify-content: center;
-    margin-bottom: 15px;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 1rem;
+    justify-content: center; /* لمحاذاة الصور والفيديوهات في المنتصف */
 }
 
-.ad-card .ad-media-container img,
-.ad-card .ad-media-container video {
-    max-width: 100%;
+.ad-media-container img,
+.ad-media-container video,
+.ad-media-container iframe {
+    max-width: 100%; /* اجعل الصور والفيديوهات تستجيب */
     height: auto;
     border-radius: 5px;
+    object-fit: cover;
+    background-color: #333; /* خلفية رمادية للصور الفارغة */
 }
 
+/* تنسيق روابط الإعلانات (واتساب وبريد إلكتروني) */
 .ad-card a {
-    color: #007bff;
+    display: inline-flex; /* لجعل الأيقونة والنص في سطر واحد */
+    align-items: center; /* لمحاذاة عمودية */
+    background-color: #007bff;
+    color: white;
+    padding: 0.6rem 1rem;
+    border-radius: 5px;
     text-decoration: none;
-    margin-top: 10px;
-    display: block;
+    margin-left: 10px; /* مسافة بين الروابط */
+    margin-top: 1rem;
+    transition: background-color 0.2s;
+}
+
+.ad-card a.whatsapp-link {
+    background-color: #25D366; /* لون واتساب */
+}
+
+.ad-card a.email-link {
+    background-color: #dc3545; /* لون أحمر للبريد الإلكتروني */
 }
 
 .ad-card a:hover {
-    text-decoration: underline;
+    opacity: 0.9;
 }
 
+
 .hidden {
-    display: none !important;
+    display: none;
 }
 
 footer {
     text-align: center;
-    padding: 20px;
-    margin-top: 30px;
-    background-color: #333;
-    color: white;
-    font-size: 0.9em;
+    padding: 1rem;
+    color: #bbb;
+    font-size: 0.9rem;
+    margin-top: 2rem;
+    border-top: 1px solid #444;
 }
 
-/* Responsive adjustments */
+/* استجابة للتصميم (Responsive design) */
 @media (max-width: 768px) {
-    .grid-container {
-        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    .container {
+        margin: 1rem;
+        padding: 1rem;
     }
-}
 
-@media (max-width: 480px) {
-    .grid-container {
-        grid-template-columns: 1fr;
+    #places-container {
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 1rem;
     }
-    main {
-        margin: 10px auto;
-        padding: 10px;
+
+    .place-card .logo {
+        width: 80px;
+        height: 80px;
     }
-    .place-card, .ad-card {
-        padding: 10px;
+
+    .ad-card a {
+        padding: 0.5rem 0.8rem;
+        font-size: 0.9rem;
     }
 }

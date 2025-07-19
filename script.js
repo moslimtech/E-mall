@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // دالة للتحقق مما إذا كان الإعلان نشطًا (بناءً على حالة الاعلان فقط)
     function isAdCurrentlyActive(ad) {
         // يمكنك إضافة منطق للتحقق من تاريخ بداية ونهاية الإعلان هنا إذا أردت
-        return ad['حالة الاعلان'] === 'نشط'; //
+        return ad['حالة الاعلان'] === 'نشط';
     }
 
     // دالة لجلب البيانات من Google Sheet
@@ -295,7 +295,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 mediaContainer.appendChild(video);
             }
             // عرض فيديو يوتيوب
-            // **هام: تأكد أن عمود "رابط يوتيوب" يحتوي على روابط يوتيوب فعلية (https://www.youtube.com/watch?v=...) وليس روابط Googleusercontent أو Drive**
+            // **هام: تأكد أن عمود "رابط يوتيوب" يحتوي على روابط يوتيوب فعلية (youtube.com4...) وليس روابط Googleusercontent أو Drive**
             if (ad['رابط يوتيوب'] && ad['رابط يوتيوب'].startsWith('http')) {
                 const youtubeUrl = ad['رابط يوتيوب'];
                 const videoIdMatch = youtubeUrl.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&?]+)/);
@@ -304,7 +304,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const iframe = document.createElement('iframe');
                     iframe.width = "100%";
                     iframe.height = "315";
-                    iframe.src = `https://www.youtube.com/embed/${videoId}`; // رابط يوتيوب القياسي للتضمين
+                    iframe.src = `http://googleusercontent.com/youtube.com/embed/${videoId}`; // رابط يوتيوب القياسي للتضمين
                     iframe.frameBorder = "0";
                     iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
                     iframe.allowFullscreen = true;

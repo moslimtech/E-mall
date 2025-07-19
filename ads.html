@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
@@ -166,7 +166,133 @@ async function loadAds() {
   }
 }
 
+
+
 loadAds();
+
+
 </script>
+</body>
+</html>
+ -->
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>إعلانات المكان</title>
+  <style>
+    body { font-family: 'Cairo', sans-serif; background: #f4f4f4; margin: 0; padding: 15px; }
+    h2 { text-align: center; margin-bottom: 15px; }
+    .ads-container { display: flex; flex-direction: column; gap: 20px; }
+    .ad-card {
+      background: white; padding: 12px; border-radius: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    .ad-title { font-size: 18px; font-weight: bold; margin-bottom: 8px; }
+    .ad-images { display: flex; gap: 10px; flex-wrap: wrap; }
+    .ad-images img {
+      width: 100px; height: 100px; object-fit: cover;
+      border-radius: 6px; cursor: pointer;
+    }
+    .video-container iframe, .video-container video {
+      width: 100%; border-radius: 10px; margin-top: 10px;
+    }
+    .btn { display: inline-block; padding: 8px 14px; background: #2196f3; color: #fff; text-decoration: none; border-radius: 6px; margin-top: 8px; }
+    
+    /* نافذة تكبير الصورة */
+    .modal { display: none; position: fixed; z-index: 9999; padding-top: 50px;
+      left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8);}
+    .modal img { margin: auto; display: block; max-width: 90%; max-height: 80%; }
+  </style>
+</head>
+<body>
+  <h2>إعلانات المكان</h2>
+  <div class="ads-container" id="ads-container"></div>
+
+  <!-- نافذة تكبير الصورة -->
+  <div id="imgModal" class="modal">
+    <img id="modalImg">
+  </div>
+
+  <script>
+    const apiURL = "https://script.google.com/macros/s/AKfycbxkKrHyeEAgSkLz2QHzSgA5w09dIvfFJgDUMkP373f-VVAZmahHalr0GOYojqK41x6E/exec";
+    const adsContainer = document.getElementById("ads-container");
+    const urlParams = new URLSearchParams(window.location.search);
+    const placeId = urlParams.get("place");
+
+    fetch(apiURL)
+      .then(res => res.json())
+      .then(data => {
+        const ads = data.ads.filter(ad => ad["معرف المكان"] === placeId && ad["حالة الاعلان"] === "نشط");
+        if (ads.length === 0) {
+          adsContainer.innerHTML = "<p style='text-align:center;color:#888;'>لا توجد إعلانات نشطة لهذا المكان</p>";
+          return;
+        }
+
+        ads.forEach(ad => {
+          const card = document.createElement("div");
+          card.className = "ad-card";
+
+          const title = ad["عنوان العرض"] || "إعلان بدون عنوان";
+          const description = ad["وصف"] || "";
+
+          let imagesHTML = "";
+          const imgKeys = ["رابط الصورة","رابط صورة2","رابط صورة3","رابط صورة4","رابط صورة5","رابط صورة6","رابط صورة7","رابط صورة8"];
+          imgKeys.forEach(key => {
+            if (ad[key] && ad[key].trim() !== "") {
+              imagesHTML += `<img src="${ad[key]}" class="ad-image">`;
+            }
+          });
+
+          const videoUrl = ad["رابط الفيديو"] || ad["رابط يوتيوب"];
+          
+          card.innerHTML = `
+            <div class="ad-title">${title}</div>
+            <p>${description}</p>
+            <div class="ad-images">${imagesHTML}</div>
+            <div class="video-container">${renderVideoHTML(videoUrl)}</div>
+          `;
+
+          adsContainer.appendChild(card);
+        });
+
+        // نافذة تكبير الصور
+        document.querySelectorAll(".ad-image").forEach(img => {
+          img.addEventListener("click", () => {
+            document.getElementById("modalImg").src = img.src;
+            document.getElementById("imgModal").style.display = "block";
+          });
+        });
+        document.getElementById("imgModal").onclick = function() {
+          this.style.display = "none";
+        };
+      });
+
+    function renderVideoHTML(videoUrl) {
+      if (!videoUrl) return "";
+      // يوتيوب
+      if (videoUrl.includes("youtube.com") || videoUrl.includes("youtu.be")) {
+        const embedUrl = videoUrl.replace("watch?v=", "embed/");
+        return `<iframe height="220" src="${embedUrl}" frameborder="0" allowfullscreen></iframe>`;
+      }
+      // جوجل درايف
+      if (videoUrl.includes("drive.google.com")) {
+        return `<iframe height="220" src="${videoUrl}" frameborder="0" allowfullscreen></iframe>`;
+      }
+      // MP4
+      if (videoUrl.endsWith(".mp4")) {
+        return `<video controls><source src="${videoUrl}" type="video/mp4"></video>`;
+      }
+      // تيك توك
+      if (videoUrl.includes("tiktok.com")) {
+        return `<blockquote class="tiktok-embed" cite="${videoUrl}" data-video-id="" style="max-width: 605px;min-width: 325px;"></blockquote>
+                <script async src="https://www.tiktok.com/embed.js"></script>`;
+      }
+      // أي رابط آخر
+      return `<a href="${videoUrl}" target="_blank" class="btn">شاهد الفيديو</a>`;
+    }
+  </script>
 </body>
 </html>

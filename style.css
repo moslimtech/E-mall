@@ -32,6 +32,63 @@ h1, h2, h3, h4 {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
+/* تنسيق قسم الفلاتر */
+.filters-container {
+    display: flex;
+    flex-wrap: wrap; /* للسماح للعناصر بالانتقال إلى سطر جديد */
+    gap: 15px; /* مسافة بين مجموعات الفلاتر */
+    align-items: flex-end; /* لمحاذاة العناصر للأسفل */
+    justify-content: flex-end; /* محاذاة لليمين في RTL */
+    padding: 1rem 1.5rem;
+    background-color: #4a4a4a; /* لون خلفية مختلف قليلاً */
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1; /* للسماح للمجموعات بالتوسع */
+    min-width: 150px; /* حد أدنى لعرض كل فلتر */
+}
+
+.filters-container label {
+    font-weight: bold;
+    margin-bottom: 5px;
+    color: #e0e0e0;
+}
+
+.filters-container select {
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid #666;
+    background-color: #333;
+    color: #f0f0f0;
+    font-size: 1rem;
+    width: 100%; /* تأكد من أن الـ select يأخذ العرض الكامل للمجموعة */
+    box-sizing: border-box; /* لضمان أن التبطين والحدود لا تزيد عن العرض المحدد */
+}
+
+.filters-container select:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.filters-container button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.2s;
+    white-space: nowrap; /* لمنع الزر من الانقسام */
+}
+
+.filters-container button:hover {
+    background-color: #0056b3;
+}
+
 /* بطاقات الأماكن */
 #places-container {
     display: grid;
@@ -291,6 +348,19 @@ footer {
         margin: 1rem 0.5rem; /* تقليل الهوامش على الأطراف */
         padding: 0.8rem;
     }
+    .filters-container {
+        flex-direction: column; /* جعل الفلاتر عمودية على الشاشات الصغيرة */
+        align-items: stretch; /* لتوسيع العناصر لملء العرض */
+        padding: 1rem;
+    }
+    .filter-group {
+        min-width: unset; /* إزالة الحد الأدنى للعرض */
+        width: 100%; /* جعل كل فلتر يأخذ العرض الكامل */
+    }
+    .filters-container button {
+        width: 100%; /* جعل الزر يأخذ العرض الكامل */
+        margin-top: 10px; /* مسافة أعلى الزر */
+    }
     #places-container {
         grid-template-columns: 1fr; /* عمود واحد فقط على الشاشات الصغيرة جداً */
         gap: 0.8rem;
@@ -347,6 +417,9 @@ footer {
 @media (min-width: 481px) and (max-width: 768px) {
     .container {
         margin: 1.5rem;
+        padding: 1rem;
+    }
+    .filters-container {
         padding: 1rem;
     }
     #places-container {

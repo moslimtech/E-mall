@@ -6,6 +6,7 @@ body {
     color: #f0f0f0;
     direction: rtl; /* للغة العربية */
     text-align: right; /* محاذاة النص لليمين */
+    line-height: 1.6; /* لتحسين قابلية القراءة */
 }
 
 header {
@@ -14,6 +15,12 @@ header {
     padding: 1rem 0;
     text-align: center;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+h1, h2, h3, h4 {
+    color: #fff;
+    margin-top: 0;
+    margin-bottom: 0.8rem;
 }
 
 .container {
@@ -28,7 +35,7 @@ header {
 /* بطاقات الأماكن */
 #places-container {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); /* 250px كحد أدنى */
     gap: 1.5rem;
 }
 
@@ -39,7 +46,10 @@ header {
     text-align: center;
     cursor: pointer;
     transition: transform 0.2s, box-shadow 0.2s;
-    position: relative; /* لتحديد موقع شارة الإعلان والحالة */
+    position: relative;
+    display: flex; /* لترتيب المحتوى داخل الكارت */
+    flex-direction: column; /* ترتيب رأسي */
+    align-items: center; /* محاذاة أفقية للمحتوى */
 }
 
 .place-card:hover {
@@ -59,34 +69,37 @@ header {
 .place-card h3 {
     margin: 0.5rem 0;
     color: #fff;
+    font-size: 1.2rem; /* حجم خط مناسب */
 }
 
 .place-card p {
     color: #ccc;
     font-size: 0.9rem;
+    flex-grow: 1; /* للسماح للحالة بأن تأخذ المساحة المتبقية */
 }
 
 /* شارة الإعلان */
 .ad-badge {
     position: absolute;
     top: 10px;
-    right: 10px; /* للغة العربية */
+    right: 10px;
     background-color: #ffc107; /* لون أصفر */
     color: #333;
     padding: 0.3rem 0.6rem;
     border-radius: 5px;
     font-size: 0.8rem;
     font-weight: bold;
-    display: flex; /* لعرض الأيقونة والنص جنبًا إلى جنب */
-    align-items: center; /* لمحاذاة عمودية */
-    gap: 5px; /* مسافة بين الأيقونة والنص */
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap; /* لمنع الكلمة من الانقسام على سطرين */
 }
 
 /* مؤشر حالة المكان */
 .status-indicator {
     position: absolute;
     top: 10px;
-    left: 10px; /* للغة العربية */
+    left: 10px;
     width: 15px;
     height: 15px;
     border-radius: 50%;
@@ -114,10 +127,11 @@ header {
 #place-details-container h2 {
     color: #007bff;
     margin-bottom: 1rem;
+    font-size: 1.8rem;
 }
 
 #place-detail-info p {
-    margin: 0.5rem 0;
+    margin: 0.8rem 0; /* مسافة أكبر بين الفقرات */
     color: #e0e0e0;
 }
 
@@ -130,9 +144,10 @@ header {
     color: #88B04B; /* لون أخضر فاتح */
     text-decoration: none;
     font-weight: bold;
-    display: inline-flex; /* لجعل الأيقونة والنص في سطر واحد */
-    align-items: center; /* لمحاذاة عمودية */
+    display: flex; /* استخدام flex لتحسين المحاذاة */
+    align-items: center;
     margin-top: 5px;
+    padding: 5px 0; /* مسافة داخلية للضغط بسهولة على الهواتف */
 }
 
 #place-detail-info a:hover {
@@ -142,7 +157,8 @@ header {
 /* مسافة بين الأيقونة والنص في الروابط */
 .place-details-container p a i,
 .ad-card a i {
-    margin-left: 8px; /* مسافة بين الأيقونة والنص (أيقونات Font Awesome) */
+    margin-left: 8px; /* مسافة بين الأيقونة والنص */
+    font-size: 1.1em; /* حجم أكبر قليلاً للأيقونات */
 }
 
 
@@ -157,6 +173,8 @@ header {
     font-size: 1rem;
     margin-bottom: 1.5rem;
     transition: background-color 0.2s;
+    width: auto; /* يجعل الزر لا يأخذ عرض 100% */
+    display: inline-block; /* ليتناسب مع عرضه */
 }
 
 #back-button:hover {
@@ -184,6 +202,7 @@ header {
     margin-bottom: 0.8rem;
     border-bottom: 1px solid #777;
     padding-bottom: 0.5rem;
+    font-size: 1.4rem;
 }
 
 .ad-card p {
@@ -192,46 +211,55 @@ header {
 }
 
 .ad-media-container {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid; /* استخدام Grid لترتيب الصور والفيديوهات */
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); /* أعمدة مرنة */
     gap: 10px;
     margin-top: 1rem;
-    justify-content: center; /* لمحاذاة الصور والفيديوهات في المنتصف */
+    align-items: center; /* لمحاذاة العناصر عمودياً */
+    justify-content: center; /* لمحاذاة العناصر أفقياً */
 }
 
 .ad-media-container img,
 .ad-media-container video,
 .ad-media-container iframe {
-    max-width: 100%; /* اجعل الصور والفيديوهات تستجيب */
+    width: 100%; /* اجعل الصور والفيديوهات تستجيب لعرض العمود */
     height: auto;
     border-radius: 5px;
     object-fit: cover;
     background-color: #333; /* خلفية رمادية للصور الفارغة */
+    display: block; /* لإزالة أي مسافات إضافية تحت الصور */
 }
 
 /* تنسيق روابط الإعلانات (واتساب وبريد إلكتروني) */
-.ad-card a {
-    display: inline-flex; /* لجعل الأيقونة والنص في سطر واحد */
-    align-items: center; /* لمحاذاة عمودية */
+.ad-card .ad-links {
+    display: flex;
+    flex-wrap: wrap; /* تسمح للعناصر بالانتقال إلى سطر جديد */
+    gap: 10px; /* مسافة بين الروابط */
+    margin-top: 1rem;
+    justify-content: flex-end; /* لمحاذاة الروابط إلى اليسار في RTL */
+}
+
+.ad-card .ad-links a {
     background-color: #007bff;
     color: white;
     padding: 0.6rem 1rem;
     border-radius: 5px;
     text-decoration: none;
-    margin-left: 10px; /* مسافة بين الروابط */
-    margin-top: 1rem;
     transition: background-color 0.2s;
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap; /* لمنع انقسام النص */
 }
 
-.ad-card a.whatsapp-link {
+.ad-card .ad-links a.whatsapp-link {
     background-color: #25D366; /* لون واتساب */
 }
 
-.ad-card a.email-link {
+.ad-card .ad-links a.email-link {
     background-color: #dc3545; /* لون أحمر للبريد الإلكتروني */
 }
 
-.ad-card a:hover {
+.ad-card .ad-links a:hover {
     opacity: 0.9;
 }
 
@@ -249,25 +277,104 @@ footer {
     border-top: 1px solid #444;
 }
 
-/* استجابة للتصميم (Responsive design) */
-@media (max-width: 768px) {
+/* ======= استجابة التصميم (Responsive design) ======= */
+
+/* للهواتف الصغيرة جداً (أقل من 480 بكسل) */
+@media (max-width: 480px) {
+    body {
+        font-size: 0.9rem;
+    }
+    header h1 {
+        font-size: 1.8rem;
+    }
     .container {
-        margin: 1rem;
-        padding: 1rem;
+        margin: 1rem 0.5rem; /* تقليل الهوامش على الأطراف */
+        padding: 0.8rem;
     }
-
     #places-container {
-        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-        gap: 1rem;
+        grid-template-columns: 1fr; /* عمود واحد فقط على الشاشات الصغيرة جداً */
+        gap: 0.8rem;
     }
-
+    .place-card {
+        padding: 0.8rem;
+    }
     .place-card .logo {
         width: 80px;
         height: 80px;
     }
+    .place-card h3 {
+        font-size: 1.1rem;
+    }
+    .ad-badge {
+        font-size: 0.7rem;
+        padding: 0.2rem 0.4rem;
+        gap: 3px;
+    }
 
-    .ad-card a {
+    #place-details-container h2 {
+        font-size: 1.5rem;
+    }
+    #place-detail-info p {
+        font-size: 0.9rem;
+        margin: 0.6rem 0;
+    }
+    #back-button {
+        width: 100%; /* الزر يأخذ عرض 100% على الهواتف */
+        padding: 0.6rem 1rem;
+    }
+
+    .ad-card h4 {
+        font-size: 1.2rem;
+    }
+    .ad-card p {
+        font-size: 0.9rem;
+    }
+    .ad-media-container {
+        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); /* أعمدة أصغر للصور */
+        gap: 5px;
+    }
+    .ad-card .ad-links {
+        justify-content: center; /* لمحاذاة الروابط في المنتصف */
+        gap: 8px;
+    }
+    .ad-card .ad-links a {
         padding: 0.5rem 0.8rem;
         font-size: 0.9rem;
+    }
+}
+
+/* للهواتف المتوسطة (بين 481 بكسل و 768 بكسل) */
+@media (min-width: 481px) and (max-width: 768px) {
+    .container {
+        margin: 1.5rem;
+        padding: 1rem;
+    }
+    #places-container {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 1.2rem;
+    }
+    .place-card .logo {
+        width: 90px;
+        height: 90px;
+    }
+    #place-details-container h2 {
+        font-size: 1.6rem;
+    }
+    .ad-media-container {
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    }
+    .ad-card .ad-links {
+        justify-content: flex-end; /* تبقى محاذاة لليسار في RTL */
+    }
+}
+
+/* للشاشات الكبيرة (أكبر من 992 بكسل - للحالات التي قد يكون فيها تخطيط مختلف) */
+@media (min-width: 992px) {
+    .container {
+        padding: 2rem;
+    }
+    #places-container {
+        grid-template-columns: repeat(3, 1fr); /* 3 أعمدة ثابتة على الشاشات الكبيرة */
+        gap: 2rem;
     }
 }

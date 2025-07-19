@@ -11,7 +11,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // دالة للتحقق مما إذا كان الإعلان نشطًا (بناءً على حالة الاعلان فقط)
     function isAdCurrentlyActive(ad) {
-        return ad['حالة الاعلان'] === 'نشط';
+        const isActive = ad['حالة الاعلان'] === 'نشط';
+        console.log(`Checking Ad ID: ${ad['معرف الإعلان']} - Status: "${ad['حالة الاعلان']}" - Is Active: ${isActive}`);
+        return isActive;
     }
 
     async function fetchData() {
@@ -21,6 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             allData = await response.json();
+            console.log('Fetched Data:', allData); // لعرض جميع البيانات التي تم جلبها
             displayPlaces(allData.places, allData.ads);
         } catch (error) {
             console.error('حدث خطأ أثناء جلب البيانات:', error);
@@ -61,7 +64,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 card.appendChild(statusIndicator);
             }
 
-            // لا حاجة لتمرير currentJsonDate
             if (hasAds(place['معرف المكان'], ads)) {
                 const adBadge = document.createElement('span');
                 adBadge.className = 'ad-badge';
@@ -95,23 +97,24 @@ document.addEventListener('DOMContentLoaded', () => {
         placeDetailName.textContent = place['اسم المكان'];
         placeDetailInfo.innerHTML = `
             <p><strong>رقم التواصل:</strong> ${place['رقم التواصل'] || 'غير متوفر'}</p>
-            <p><strong>البريد الإلكتروني:</b> ${place['الإيميل'] || 'غير متوفر'}</p>
-            <p><strong>الموقع:</strong> ${getPlaceLocationName(place['المكان'])} - الدور: ${place['الدور'] || 'غير متوفر'}</p>
+            <p><strong>البريد الإلكتروني:</strong> ${place['الإيميل'] || 'غير متوفر'}</p>
+            <p><strong>المكان:</strong> ${getPlaceLocationName(place['المكان'])} - الدور: ${place['الدور'] || 'غير متوفر'}</p>
             <p><strong>المدينة:</strong> ${getCityName(place['المدينة'])}</p>
             <p><strong>المنطقة:</strong> ${getAreaName(place['المنطقة'])}</p>
             <p><strong>خدمة التوصيل:</strong> ${place['يوجد خدمة توصيل'] || 'غير محدد'}</p>
             ${place['رابط واتساب'] ? `<p><a href="${place['رابط واتساب']}" target="_blank">تواصل عبر واتساب</a></p>` : ''}
-            ${place['الموقع'] ? `<p><a href="https://www.google.com/maps/search/?api=1&query=$${place['الموقع']}" target="_blank">عرض الموقع على الخريطة</a></p>` : ''}
+            ${place['الموقع'] ? `<p><a href="http://googleusercontent.com/maps.google.com/7{place['الموقع']}" target="_blank">عرض الموقع على الخريطة</a></p>` : ''}
         `;
 
-        // لا حاجة لتمرير currentJsonDate
-        displayAdsForPlace(place['معرف المكان']); 
+        displayAdsForPlace(place['معرف المكان']);
     }
 
-    // دالة displayAdsForPlace لتشمل التحقق من الحالة فقط
     function displayAdsForPlace(placeId) {
         adsContainer.innerHTML = '';
         const relevantAds = allData.ads.filter(ad => ad['معرف المكان'] === placeId && isAdCurrentlyActive(ad));
+
+        console.log(`Displaying ads for Place ID: ${placeId}`);
+        console.log(`Found ${relevantAds.length} active ads for this place.`);
 
         if (relevantAds.length === 0) {
             adsContainer.innerHTML = '<p>لا توجد إعلانات نشطة لهذا المكان حاليًا.</p>';
@@ -149,20 +152,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 video.src = ad['رابط الفيديو'];
                 mediaContainer.appendChild(video);
             }
-            // عرض فيديو يوتيوب
-            if (ad['رابط يوتيوب'] && ad['رابط يوتيوب'].includes('youtube.com')) {
+            // عرض فيديو يوتيوب (مع تحسين للتعامل مع الروابط غير الصالحة)
+            if (ad['رابط يوتيوب']) {
                 const youtubeUrl = ad['رابط يوتيوب'];
+                // Regex للبحث عن معرف الفيديو في تنسيقات يوتيوب المختلفة
                 const videoIdMatch = youtubeUrl.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&?]+)/);
-                if (videoIdMatch && videoIdMatch[1]) {
+                if (videoIdMatch && videoIdMatch[1] && videoIdMatch[1] !== '0') { // تأكد أن المعرف ليس "0"
                     const videoId = videoIdMatch[1];
                     const iframe = document.createElement('iframe');
                     iframe.width = "100%";
                     iframe.height = "315";
-                    iframe.src = `https://www.youtube.com/embed/$${videoId}`;
+                    iframe.src = `http://googleusercontent.com/youtube.com/8{videoId}`;
                     iframe.frameBorder = "0";
                     iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
                     iframe.allowFullscreen = true;
                     mediaContainer.appendChild(iframe);
+                    console.log(`YouTube video embedded for Ad ID: ${ad['معرف الإعلان']} with Video ID: ${videoId}`);
+                } else {
+                    console.warn(`Invalid YouTube URL or Video ID for Ad ID: ${ad['معرف الإعلان']}: ${youtubeUrl}`);
                 }
             }
 

@@ -1,13 +1,14 @@
-const CACHE_NAME = 'my-pwa-cache-v1'; // اسم ذاكرة التخزين المؤقت
+// تم تعديل CACHE_NAME ليعكس أن المسارات الآن تشمل '/e-mall/'
+const CACHE_NAME = 'my-pwa-cache-v1-e-mall'; // اسم ذاكرة التخزين المؤقت
 const urlsToCache = [
-  '/',
-  '/index.html',
-  '/style.css',
-  '/script.js',
-  '/manifest.json',
-  '/images/icon-192x192.png', // تأكد من وجود هذه الأيقونات
-  '/images/icon-512x512.png',
-  '/images/maskable_icon.png',
+  '/e-mall/', // المسار الأساسي للمشروع
+  '/e-mall/index.html',
+  '/e-mall/style.css',
+  '/e-mall/script.js',
+  '/e-mall/manifest.json',
+  '/e-mall/images/icon-192x192.png', // تأكد من وجود هذه الأيقونات في مجلد /e-mall/images/
+  '/e-mall/images/icon-512x512.png',
+  '/e-mall/images/maskable_icon.png',
   // أضف هنا أي أصول أخرى تريد تخزينها مؤقتًا، مثل صور الشعار الافتراضية، الخطوط، إلخ.
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css'
 ];

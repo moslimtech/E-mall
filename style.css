@@ -1,453 +1,453 @@
+/* General Body Styles */
 body {
     font-family: 'Arial', sans-serif;
     margin: 0;
     padding: 0;
-    background-color: #2c2c2c;
-    color: #f0f0f0;
-    direction: rtl; /* للغة العربية */
+    background-color: #f4f7f6; /* لون خلفية فاتح */
+    color: #333;
+    line-height: 1.6;
+    direction: rtl; /* دعم اللغة العربية */
     text-align: right; /* محاذاة النص لليمين */
-    line-height: 1.6; /* لتحسين قابلية القراءة */
 }
 
+/* Header Styles */
 header {
-    background-color: #007bff;
+    background-color: #007bff; /* لون أزرق جذاب */
     color: white;
-    padding: 1rem 0;
+    padding: 1.2rem 1rem;
     text-align: center;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    position: sticky; /* جعل الرأسية ثابتة عند التمرير */
+    top: 0;
+    z-index: 1000; /* التأكد من ظهورها فوق العناصر الأخرى */
 }
 
-h1, h2, h3, h4 {
-    color: #fff;
-    margin-top: 0;
-    margin-bottom: 0.8rem;
+header h1 {
+    margin: 0;
+    font-size: 2.2rem;
+    letter-spacing: 0.5px;
 }
 
-.container {
-    max-width: 900px;
-    margin: 2rem auto;
-    padding: 1.5rem;
-    background-color: #3a3a3a;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+/* Main Content Area */
+main {
+    padding: 20px;
+    max-width: 1200px; /* تحديد أقصى عرض للمحتوى */
+    margin: 20px auto; /* توسيط المحتوى وإضافة مسافة من الأعلى */
 }
 
-/* تنسيق قسم الفلاتر */
-.filters-container {
+/* Filters Container */
+#filters-container {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    margin-bottom: 30px;
     display: flex;
-    flex-wrap: wrap; /* للسماح للعناصر بالانتقال إلى سطر جديد */
-    gap: 15px; /* مسافة بين مجموعات الفلاتر */
-    align-items: flex-end; /* لمحاذاة العناصر للأسفل */
-    justify-content: flex-end; /* محاذاة لليمين في RTL */
-    padding: 1rem 1.5rem;
-    background-color: #4a4a4a; /* لون خلفية مختلف قليلاً */
+    flex-wrap: wrap; /* للسماح للعناصر بالانتقال لسطر جديد على الشاشات الصغيرة */
+    gap: 15px; /* مسافة بين عناصر الفلتر */
+    justify-content: center; /* توسيط عناصر الفلتر */
+    align-items: center;
 }
 
 .filter-group {
     display: flex;
     flex-direction: column;
-    flex-grow: 1; /* للسماح للمجموعات بالتوسع */
-    min-width: 150px; /* حد أدنى لعرض كل فلتر */
+    min-width: 180px; /* لتوفير مساحة كافية للعناصر */
 }
 
-.filters-container label {
+.filter-group label {
     font-weight: bold;
-    margin-bottom: 5px;
-    color: #e0e0e0;
+    margin-bottom: 8px;
+    color: #555;
+    font-size: 0.95rem;
 }
 
-.filters-container select {
-    padding: 8px;
-    border-radius: 5px;
-    border: 1px solid #666;
-    background-color: #333;
-    color: #f0f0f0;
-    font-size: 1rem;
-    width: 100%; /* تأكد من أن الـ select يأخذ العرض الكامل للمجموعة */
-    box-sizing: border-box; /* لضمان أن التبطين والحدود لا تزيد عن العرض المحدد */
-}
-
-.filters-container select:focus {
-    outline: none;
-    border-color: #007bff;
-    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
-}
-
-.filters-container button {
-    background-color: #007bff;
-    color: white;
-    border: none;
+.filter-group select,
+.filter-group button {
     padding: 10px 15px;
-    border-radius: 5px;
-    cursor: pointer;
+    border: 1px solid #ccc;
+    border-radius: 8px;
     font-size: 1rem;
-    transition: background-color 0.2s;
-    white-space: nowrap; /* لمنع الزر من الانقسام */
+    transition: all 0.3s ease;
+    background-color: #f8f8f8;
+    color: #333;
+    appearance: none; /* لإزالة السهم الافتراضي في select */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23000000%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13.6-6.4H18.6c-5%200-9.3%203.2-11.6%207.7-2.3%204.6-1.5%2010.2%202.1%2014L139.7%20202c4.9%205.6%2012.7%205.6%2017.6%200l126.1-115.5c3.5-3.8%204.4-9.4%202.1-14z%22%2F%3E%3C%2Fsvg%3E'); /* سهم مخصص */
+    background-repeat: no-repeat;
+    background-position: left 15px center; /* وضع السهم على اليسار بسبب rtl */
+    background-size: 10px;
 }
 
-.filters-container button:hover {
-    background-color: #0056b3;
+.filter-group select:focus,
+.filter-group button:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+    outline: none;
 }
 
-/* بطاقات الأماكن */
+.filter-group button {
+    background-color: #28a745; /* زر أخضر لإعادة التعيين */
+    color: white;
+    cursor: pointer;
+    font-weight: bold;
+    min-width: 150px;
+}
+
+.filter-group button:hover {
+    background-color: #218838;
+}
+
+/* Places Container (Grid Layout) */
 #places-container {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); /* 250px كحد أدنى */
-    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* 280px كحد أدنى، عمود واحد على الشاشات الصغيرة */
+    gap: 25px; /* مسافة بين البطاقات */
 }
 
 .place-card {
-    background-color: #4a4a4a;
-    padding: 1rem;
-    border-radius: 8px;
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     text-align: center;
     cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
-    position: relative;
-    display: flex; /* لترتيب المحتوى داخل الكارت */
-    flex-direction: column; /* ترتيب رأسي */
-    align-items: center; /* محاذاة أفقية للمحتوى */
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    position: relative; /* لتحديد موقع شارة العروض ومؤشر الحالة */
+    overflow: hidden; /* لإخفاء أي جزء زائد من الصورة إذا كانت كبيرة */
 }
 
 .place-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+    transform: translateY(-8px); /* رفع البطاقة قليلاً عند التحويم */
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
 }
+
+.place-card .status-indicator {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    z-index: 10;
+}
+
+.status-open {
+    background-color: #28a745; /* أخضر للمفتوح */
+}
+
+.status-prayer {
+    background-color: #ffc107; /* أصفر للصلاة */
+}
+
+.status-closed {
+    background-color: #dc3545; /* أحمر للمغلق */
+}
+
+.ad-badge {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    background-color: #ff6f00; /* برتقالي للعروض */
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.ad-badge i {
+    font-size: 0.9rem;
+}
+
 
 .place-card .logo {
     width: 100px;
     height: 100px;
-    border-radius: 50%;
-    object-fit: cover;
-    margin-bottom: 0.8rem;
-    border: 3px solid #007bff;
+    border-radius: 50%; /* لجعل الشعار دائريًا */
+    object-fit: cover; /* لضمان تغطية الصورة للمساحة */
+    margin-bottom: 15px;
+    border: 3px solid #eee; /* إطار خفيف للشعار */
 }
 
 .place-card h3 {
-    margin: 0.5rem 0;
-    color: #fff;
-    font-size: 1.2rem; /* حجم خط مناسب */
+    margin: 10px 0 8px;
+    font-size: 1.5rem;
+    color: #007bff;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .place-card p {
-    color: #ccc;
-    font-size: 0.9rem;
-    flex-grow: 1; /* للسماح للحالة بأن تأخذ المساحة المتبقية */
+    margin: 5px 0;
+    font-size: 0.95rem;
+    color: #666;
 }
 
-/* شارة الإعلان */
-.ad-badge {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background-color: #ffc107; /* لون أصفر */
-    color: #333;
-    padding: 0.3rem 0.6rem;
-    border-radius: 5px;
-    font-size: 0.8rem;
-    font-weight: bold;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    white-space: nowrap; /* لمنع الكلمة من الانقسام على سطرين */
+.no-results {
+    text-align: center;
+    grid-column: 1 / -1; /* لجعل رسالة "لا توجد نتائج" تمتد على عرض الشبكة بالكامل */
+    font-size: 1.2rem;
+    color: #777;
+    padding: 40px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
 }
 
-/* مؤشر حالة المكان */
-.status-indicator {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    width: 15px;
-    height: 15px;
-    border-radius: 50%;
-    border: 2px solid #fff;
-}
-
-.status-open {
-    background-color: #28a745; /* أخضر */
-}
-
-.status-prayer {
-    background-color: #ffc107; /* أصفر */
-}
-
-.status-closed {
-    background-color: #dc3545; /* أحمر */
-}
-
-
-/* تفاصيل المكان */
+/* Place Details Container */
 #place-details-container {
-    text-align: right;
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
 }
 
-#place-details-container h2 {
+#place-detail-name {
+    font-size: 2.5rem;
     color: #007bff;
-    margin-bottom: 1rem;
-    font-size: 1.8rem;
+    margin-bottom: 20px;
+    text-align: center;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 15px;
 }
 
 #place-detail-info p {
-    margin: 0.8rem 0; /* مسافة أكبر بين الفقرات */
-    color: #e0e0e0;
+    margin: 10px 0;
+    font-size: 1.1rem;
 }
 
 #place-detail-info strong {
-    color: #fff;
+    color: #444;
 }
 
-/* تنسيق الروابط في تفاصيل المكان */
 #place-detail-info a {
-    color: #88B04B; /* لون أخضر فاتح */
+    color: #007bff;
     text-decoration: none;
     font-weight: bold;
-    display: flex; /* استخدام flex لتحسين المحاذاة */
+    display: flex;
     align-items: center;
-    margin-top: 5px;
-    padding: 5px 0; /* مسافة داخلية للضغط بسهولة على الهواتف */
+    gap: 8px;
+    margin-top: 10px;
 }
 
 #place-detail-info a:hover {
     text-decoration: underline;
+    color: #0056b3;
 }
 
-/* مسافة بين الأيقونة والنص في الروابط */
-.place-details-container p a i,
-.ad-card a i {
-    margin-left: 8px; /* مسافة بين الأيقونة والنص */
-    font-size: 1.1em; /* حجم أكبر قليلاً للأيقونات */
+#place-detail-info a i {
+    font-size: 1.2rem;
 }
 
+/* Ads Container */
+#ads-container {
+    margin-top: 30px;
+    border-top: 2px dashed #eee;
+    padding-top: 25px;
+}
 
-/* زر العودة */
-#back-button {
-    background-color: #6c757d;
-    color: white;
-    border: none;
-    padding: 0.7rem 1.2rem;
-    border-radius: 5px;
-    cursor: pointer;
+#ads-container h3 {
+    text-align: center;
+    color: #007bff;
+    margin-bottom: 25px;
+    font-size: 2rem;
+}
+
+.ad-card {
+    background-color: #f9f9f9;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.ad-card h4 {
+    color: #333;
+    font-size: 1.6rem;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.ad-card p {
     font-size: 1rem;
-    margin-bottom: 1.5rem;
-    transition: background-color 0.2s;
-    width: auto; /* يجعل الزر لا يأخذ عرض 100% */
-    display: inline-block; /* ليتناسب مع عرضه */
+    color: #555;
+    margin-bottom: 15px;
+}
+
+.ad-media-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 15px;
+    justify-content: center; /* توسيط الصور والفيديوهات */
+}
+
+.ad-media-container img,
+.ad-media-container video,
+.ad-media-container iframe {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    object-fit: cover; /* لضمان عدم تشوه الصور والفيديوهات */
+}
+
+.ad-media-container img {
+    max-height: 250px; /* تحديد أقصى ارتفاع للصور */
+}
+
+
+.ad-links {
+    text-align: center;
+    margin-top: 20px;
+    border-top: 1px dashed #eee;
+    padding-top: 15px;
+}
+
+.ad-links a {
+    display: inline-flex; /* لجعل الروابط بجانب بعضها البعض */
+    align-items: center;
+    gap: 8px;
+    margin: 0 10px;
+    padding: 10px 15px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.ad-links .whatsapp-link {
+    background-color: #25d366;
+    color: white;
+}
+
+.ad-links .whatsapp-link:hover {
+    background-color: #1da851;
+}
+
+.ad-links .email-link {
+    background-color: #007bff;
+    color: white;
+}
+
+.ad-links .email-link:hover {
+    background-color: #0056b3;
+}
+
+
+/* Back Button */
+#back-button {
+    background-color: #6c757d; /* لون رمادي مناسب */
+    color: white;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    font-weight: bold;
+    display: block; /* لجعل الزر يأخذ سطرًا كاملاً */
+    margin: 25px auto 0; /* توسيط الزر */
+    width: fit-content; /* جعل العرض بحجم المحتوى */
+    transition: background-color 0.3s ease;
 }
 
 #back-button:hover {
     background-color: #5a6268;
 }
 
-/* قسم الإعلانات */
-.ads-section {
-    margin-top: 2rem;
-    border-top: 1px solid #555;
-    padding-top: 1.5rem;
-}
-
-.ad-card {
-    background-color: #555555;
-    padding: 1.2rem;
-    border-radius: 8px;
-    margin-bottom: 1.5rem;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-}
-
-.ad-card h4 {
-    color: #fff;
-    margin-top: 0;
-    margin-bottom: 0.8rem;
-    border-bottom: 1px solid #777;
-    padding-bottom: 0.5rem;
-    font-size: 1.4rem;
-}
-
-.ad-card p {
-    color: #e0e0e0;
-    line-height: 1.6;
-}
-
-.ad-media-container {
-    display: grid; /* استخدام Grid لترتيب الصور والفيديوهات */
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); /* أعمدة مرنة */
-    gap: 10px;
-    margin-top: 1rem;
-    align-items: center; /* لمحاذاة العناصر عمودياً */
-    justify-content: center; /* لمحاذاة العناصر أفقياً */
-}
-
-.ad-media-container img,
-.ad-media-container video,
-.ad-media-container iframe {
-    width: 100%; /* اجعل الصور والفيديوهات تستجيب لعرض العمود */
-    height: auto;
-    border-radius: 5px;
-    object-fit: cover;
-    background-color: #333; /* خلفية رمادية للصور الفارغة */
-    display: block; /* لإزالة أي مسافات إضافية تحت الصور */
-}
-
-/* تنسيق روابط الإعلانات (واتساب وبريد إلكتروني) */
-.ad-card .ad-links {
-    display: flex;
-    flex-wrap: wrap; /* تسمح للعناصر بالانتقال إلى سطر جديد */
-    gap: 10px; /* مسافة بين الروابط */
-    margin-top: 1rem;
-    justify-content: flex-end; /* لمحاذاة الروابط إلى اليسار في RTL */
-}
-
-.ad-card .ad-links a {
-    background-color: #007bff;
-    color: white;
-    padding: 0.6rem 1rem;
-    border-radius: 5px;
-    text-decoration: none;
-    transition: background-color 0.2s;
-    display: inline-flex;
-    align-items: center;
-    white-space: nowrap; /* لمنع انقسام النص */
-}
-
-.ad-card .ad-links a.whatsapp-link {
-    background-color: #25D366; /* لون واتساب */
-}
-
-.ad-card .ad-links a.email-link {
-    background-color: #dc3545; /* لون أحمر للبريد الإلكتروني */
-}
-
-.ad-card .ad-links a:hover {
-    opacity: 0.9;
-}
-
-
+/* Utility Class */
 .hidden {
-    display: none;
+    display: none !important;
 }
 
-footer {
-    text-align: center;
-    padding: 1rem;
-    color: #bbb;
-    font-size: 0.9rem;
-    margin-top: 2rem;
-    border-top: 1px solid #444;
-}
-
-/* ======= استجابة التصميم (Responsive design) ======= */
-
-/* للهواتف الصغيرة جداً (أقل من 480 بكسل) */
-@media (max-width: 480px) {
-    body {
-        font-size: 0.9rem;
-    }
+/* Responsive adjustments */
+@media (max-width: 768px) {
     header h1 {
         font-size: 1.8rem;
     }
-    .container {
-        margin: 1rem 0.5rem; /* تقليل الهوامش على الأطراف */
-        padding: 0.8rem;
-    }
-    .filters-container {
+
+    #filters-container {
         flex-direction: column; /* جعل الفلاتر عمودية على الشاشات الصغيرة */
-        align-items: stretch; /* لتوسيع العناصر لملء العرض */
-        padding: 1rem;
+        align-items: stretch; /* تمتد على العرض الكامل */
     }
+
     .filter-group {
-        min-width: unset; /* إزالة الحد الأدنى للعرض */
-        width: 100%; /* جعل كل فلتر يأخذ العرض الكامل */
+        width: 100%;
+        min-width: unset;
     }
-    .filters-container button {
-        width: 100%; /* جعل الزر يأخذ العرض الكامل */
-        margin-top: 10px; /* مسافة أعلى الزر */
-    }
-    #places-container {
-        grid-template-columns: 1fr; /* عمود واحد فقط على الشاشات الصغيرة جداً */
-        gap: 0.8rem;
-    }
+
     .place-card {
-        padding: 0.8rem;
+        padding: 15px;
     }
+
     .place-card .logo {
         width: 80px;
         height: 80px;
     }
+
     .place-card h3 {
-        font-size: 1.1rem;
-    }
-    .ad-badge {
-        font-size: 0.7rem;
-        padding: 0.2rem 0.4rem;
-        gap: 3px;
+        font-size: 1.3rem;
     }
 
-    #place-details-container h2 {
-        font-size: 1.5rem;
-    }
-    #place-detail-info p {
+    .place-card p {
         font-size: 0.9rem;
-        margin: 0.6rem 0;
     }
-    #back-button {
-        width: 100%; /* الزر يأخذ عرض 100% على الهواتف */
-        padding: 0.6rem 1rem;
+
+    #place-detail-name {
+        font-size: 2rem;
+    }
+
+    #place-detail-info p {
+        font-size: 1rem;
     }
 
     .ad-card h4 {
-        font-size: 1.2rem;
+        font-size: 1.4rem;
     }
+
     .ad-card p {
-        font-size: 0.9rem;
+        font-size: 0.95rem;
     }
-    .ad-media-container {
-        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); /* أعمدة أصغر للصور */
-        gap: 5px;
-    }
-    .ad-card .ad-links {
-        justify-content: center; /* لمحاذاة الروابط في المنتصف */
-        gap: 8px;
-    }
-    .ad-card .ad-links a {
-        padding: 0.5rem 0.8rem;
+
+    .ad-links a {
+        margin: 5px;
+        padding: 8px 12px;
         font-size: 0.9rem;
     }
 }
 
-/* للهواتف المتوسطة (بين 481 بكسل و 768 بكسل) */
-@media (min-width: 481px) and (max-width: 768px) {
-    .container {
-        margin: 1.5rem;
-        padding: 1rem;
+@media (max-width: 480px) {
+    main {
+        padding: 10px;
+        margin: 10px auto;
     }
-    .filters-container {
-        padding: 1rem;
-    }
-    #places-container {
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-        gap: 1.2rem;
-    }
-    .place-card .logo {
-        width: 90px;
-        height: 90px;
-    }
-    #place-details-container h2 {
-        font-size: 1.6rem;
-    }
-    .ad-media-container {
-        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    }
-    .ad-card .ad-links {
-        justify-content: flex-end; /* تبقى محاذاة لليسار في RTL */
-    }
-}
 
-/* للشاشات الكبيرة (أكبر من 992 بكسل - للحالات التي قد يكون فيها تخطيط مختلف) */
-@media (min-width: 992px) {
-    .container {
-        padding: 2rem;
+    #filters-container {
+        padding: 15px;
+        gap: 10px;
     }
+
+    .filter-group select,
+    .filter-group button {
+        padding: 8px 12px;
+        font-size: 0.9rem;
+    }
+
     #places-container {
-        grid-template-columns: repeat(3, 1fr); /* 3 أعمدة ثابتة على الشاشات الكبيرة */
-        gap: 2rem;
+        grid-template-columns: 1fr; /* عمود واحد فقط على أصغر الشاشات */
+    }
+
+    .place-card {
+        padding: 10px;
     }
 }

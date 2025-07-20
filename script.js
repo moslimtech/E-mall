@@ -1,22 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // تسجيل Service Worker لتمكين PWA
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            // المسار الآن يشمل اسم المستودع لـ GitHub Pages Project
-            // هذا لكي يتمكن المتصفح من العثور على ملف sw.js بشكل صحيح على مسار المشروع
-            navigator.serviceWorker.register('/e-mall/sw.js')
-                .then((reg) => {
-                    console.log('Service Worker registered!', reg);
-                })
-                .catch((err) => {
-                    console.error('Service Worker registration failed:', err);
-                });
-        });
-    }
+    // تم إزالة جزء تسجيل Service Worker بالكامل هنا
 
     // تأكد من أن هذا الرابط صحيح ويشير إلى نشرك لـ Google Apps Script
-    // هذا هو الرابط الذي كان يعمل ويجلب البيانات في السابق
-    const jsonUrl = 'https://script.google.com/macros/s/AKfycbxkKrHyeEAgSkLz2QHzSgA5w09dIvfFJDUMkP373f-VVAZmahHalr0GOYojqK41x6E/exec'; 
+    const jsonUrl = 'https://script.google.com/macros/s/AKfycbxkKrHyeEAgSkLz2QHzSgA5w09dIvfFJDUMkP373f-VVAZmahHalr0GOYojqK41x6E/exec'; // رابطك الصحيح
 
     // العناصر الرئيسية في DOM
     const placesContainer = document.getElementById('places-container');
@@ -216,8 +202,7 @@ document.addEventListener('DOMContentLoaded', () => {
             img.className = 'logo';
             // استخدام رابط صورة الشعار، أو صورة افتراضية
             // **هام: تأكد أن روابط الصور تبدأ بـ http/https وليست روابط Googleusercontent الداخلية**
-            // تم تعديل المسار هنا ليناسب GitHub Pages Project
-            img.src = place['رابط صورة شعار المكان'] && place['رابط صورة شعار المكان'].startsWith('http') ? place['رابط صورة شعار المكان'] : '/e-mall/images/placeholder.png'; 
+            img.src = place['رابط صورة شعار المكان'] && place['رابط صورة شعار المكان'].startsWith('http') ? place['رابط صورة شعار المكان'] : './images/placeholder.png'; // تم تعديل المسار ليكون نسبيًا للمجلد الحالي
             img.alt = `شعار ${place['اسم المكان']}`;
             card.appendChild(img);
 

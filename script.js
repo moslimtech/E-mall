@@ -2,7 +2,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // تسجيل Service Worker لتمكين PWA
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-            navigator.serviceWorker.register('/sw.js') // تأكد من المسار الصحيح لملف sw.js
+            // المسار الآن يشمل اسم المستودع لـ GitHub Pages Project
+            navigator.serviceWorker.register('/e-mall/sw.js')
                 .then((reg) => {
                     console.log('Service Worker registered!', reg);
                 })
@@ -13,8 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // تأكد من أن هذا الرابط صحيح ويشير إلى نشرك لـ Google Apps Script
-    // هذا الرابط يجب أن يعرض بيانات JSON مباشرة عند فتحه في المتصفح
-    const jsonUrl = 'https://script.google.com/macros/s/AKfycbxkKrHyeEAgSkLz2QHzSgA5w09dIvfFJgDUMkP373f-VVAZmahHalr0GOYojqK41x6E/exec';
+    const jsonUrl = 'https://script.google.com/macros/s/AKfycbxkKrHyeEAgSkLz2QHzSgA5w09dIvfFJDUMkP373f-VVAZmahHalr0GOYojqK41x6E/exec'; // رابطك الصحيح
 
     // العناصر الرئيسية في DOM
     const placesContainer = document.getElementById('places-container');
@@ -78,7 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // المدن
         const currentCityValue = cityFilter.value; // حفظ القيمة الحالية
         cityFilter.innerHTML = '<option value="">كل المدن</option>';
-        if (allData && allData.cities) {
+        if (allData && allData.cities) { // تأكد من أن allData و allData.cities موجودان
             allData.cities.forEach(city => {
                 const option = document.createElement('option');
                 option.value = city['IDالمدينة'];
@@ -94,7 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // أنواع الأنشطة
         const currentActivityValue = activityTypeFilter.value; // حفظ القيمة الحالية
         activityTypeFilter.innerHTML = '<option value="">كل الأنشطة</option>';
-        if (allData && allData.activityTypes) {
+        if (allData && allData.activityTypes) { // تأكد من أن allData و allData.activityTypes موجودان
             allData.activityTypes.forEach(type => {
                 const option = document.createElement('option');
                 option.value = type['معرف نوع النشاط'];
@@ -111,7 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const currentAreaValue = areaFilter.value; // حفظ القيمة الحالية
         areaFilter.innerHTML = '<option value="">كل المناطق</option>';
 
-        if (selectedCityId && allData && allData.areas) {
+        if (selectedCityId && allData && allData.areas) { // تأكد من أن allData و allData.areas موجودان
             const relevantAreas = allData.areas.filter(area => area['IDالمدينة'] == selectedCityId);
             if (relevantAreas && relevantAreas.length > 0) {
                 relevantAreas.forEach(area => {
@@ -213,7 +213,7 @@ document.addEventListener('DOMContentLoaded', () => {
             img.className = 'logo';
             // استخدام رابط صورة الشعار، أو صورة افتراضية
             // **هام: تأكد أن روابط الصور تبدأ بـ http/https وليست روابط Googleusercontent الداخلية**
-            img.src = place['رابط صورة شعار المكان'] && place['رابط صورة شعار المكان'].startsWith('http') ? place['رابط صورة شعار المكان'] : 'https://via.placeholder.com/100?text=No+Logo';
+            img.src = place['رابط صورة شعار المكان'] && place['رابط صورة شعار المكان'].startsWith('http') ? place['رابط صورة شعار المكان'] : '/e-mall/images/placeholder.png'; // مسار صورة افتراضية
             img.alt = `شعار ${place['اسم المكان']}`;
             card.appendChild(img);
 
@@ -248,7 +248,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <p><strong>نوع النشاط:</strong> ${getActivityTypeName(place['معرف نوع النشاط']) || 'غير محدد'}</p>
             <p><strong>خدمة التوصيل:</strong> ${place['يوجد خدمة توصيل'] || 'غير محدد'}</p>
             ${place['رابط واتساب'] && place['رابط واتساب'].startsWith('http') ? `<p><a href="${place['رابط واتساب']}" target="_blank"><i class="fab fa-whatsapp"></i> تواصل عبر واتساب</a></p>` : ''}
-            ${place['الموقع'] && place['الموقع'].split(',').length === 2 ? `<p><a href="http://www.google.com/maps/place/${place['الموقع']}" target="_blank"><i class="fas fa-map-marked-alt"></i> عرض الموقع على الخريطة</a></p>` : ''}
+            ${place['الموقع'] && place['الموقع'].split(',').length === 2 ? `<p><a href="https://maps.google.com/?q=${place['الموقع']}" target="_blank"><i class="fas fa-map-marked-alt"></i> عرض الموقع على الخريطة</a></p>` : ''}
         `;
 
         displayAdsForPlaceInModal(place['معرف المكان']);

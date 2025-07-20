@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>دليل الأماكن</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="images/icon-192x192.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+    <header>
+        <h1>دليل الأماكن</h1>
+    </header>
+
+    <main>
+        <div id="filters-container">
+            <div class="filter-group">
+                <label for="city-filter">المدينة:</label>
+                <select id="city-filter">
+                    <option value="">كل المدن</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="area-filter">المنطقة:</label>
+                <select id="area-filter" disabled>
+                    <option value="">كل المناطق</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="activity-type-filter">نوع النشاط:</label>
+                <select id="activity-type-filter">
+                    <option value="">كل الأنشطة</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <button id="reset-filters-button">إعادة تعيين</button>
+            </div>
+        </div>
+
+        <div id="places-container">
+            <p class="no-results">جارٍ تحميل الأماكن...</p>
+        </div>
+    </main>
+
+    <div id="place-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">×</span>
+            <div id="modal-place-detail-name" class="modal-title"></div>
+            <div id="modal-place-detail-info" class="modal-info"></div>
+            <div id="modal-ads-container" class="modal-ads"></div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

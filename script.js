@@ -17,7 +17,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const activityTypeFilter = document.getElementById('activity-type-filter');
     const resetFiltersButton = document.getElementById('reset-filters-button');
 
-    let allData = null; // لتخزين جميع البيانات التي تم جلبها من Google Sheet
+    // تم التعديل: تهيئة allData بمصفوفات فارغة لمنع أخطاء `null` أو `undefined`
+    let allData = {
+        places: [],
+        ads: [],
+        cities: [],
+        areas: [],
+        activityTypes: [],
+        locations: []
+    };
     let currentPlaceId = null; // لتتبع المكان المعروض حاليا في صفحة التفاصيل
     let refreshInterval; // لتخزين مؤشر setInterval
 
@@ -38,7 +46,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             const data = await response.json();
             console.log('Fetched Data:', data);
-            allData = data; // تحديث البيانات
+            // تم التعديل: دمج البيانات المجلوبة مع allData لضمان وجود جميع الخصائص
+            allData = { ...allData, ...data };
 
             // إعادة ملء الفلاتر وعرض الأماكن بعد جلب البيانات الجديدة
             populateFilters();
@@ -237,7 +246,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <p><strong>المنطقة:</strong> ${getAreaName(place['المنطقة'])}</p>
             <p><strong>نوع النشاط:</strong> ${getActivityTypeName(place['معرف نوع النشاط']) || 'غير محدد'}</p> <p><strong>خدمة التوصيل:</strong> ${place['يوجد خدمة توصيل'] || 'غير محدد'}</p>
             ${place['رابط واتساب'] && place['رابط واتساب'].startsWith('http') ? `<p><a href="${place['رابط واتساب']}" target="_blank"><i class="fab fa-whatsapp"></i> تواصل عبر واتساب</a></p>` : ''}
-            ${place['الموقع'] && place['الموقع'].split(',').length === 2 ? `<p><a href="https://www.google.com/maps/search/?api=1&query=$?q=${place['الموقع']}" target="_blank"><i class="fas fa-map-marked-alt"></i> عرض الموقع على الخريطة</a></p>` : ''}
+            ${place['الموقع'] && place['الموقع'].split(',').length === 2 ? `<p><a href="http://maps.google.com/maps?q=${place['الموقع']}" target="_blank"><i class="fas fa-map-marked-alt"></i> عرض الموقع على الخريطة</a></p>` : ''}
         `;
 
         displayAdsForPlace(place['معرف المكان']);
@@ -304,6 +313,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const iframe = document.createElement('iframe');
                     iframe.width = "100%";
                     iframe.height = "315";
+                    // تم التعديل: تصحيح رابط تضمين يوتيوب
                     iframe.src = `https://www.youtube.com/embed/${videoId}`; // رابط يوتيوب القياسي للتضمين
                     iframe.frameBorder = "0";
                     iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";

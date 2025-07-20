@@ -295,14 +295,29 @@ document.addEventListener('DOMContentLoaded', () => {
                 img.alt = `صورة الإعلان ${ad['عنوان العرض'] || ''}`;
                 mediaContainer.appendChild(img);
             }
-            // عرض الفيديو الرئيسي
-            // **هام: تأكد أن روابط الفيديو تبدأ بـ http/https وليست روابط Google Drive أو Googleusercontent الداخلية**
-            if (ad['رابط الفيديو'] && ad['رابط الفيديو'].startsWith('http')) {
+
+            // *** START OF MODIFICATION FOR GOOGLE DRIVE IFRAME ***
+            // محاولة عرض الفيديو من Google Drive باستخدام iframe
+            else if (ad['رابط الفيديو'] && ad['رابط الفيديو'].startsWith('http') && ad['رابط الفيديو'].includes('drive.google.com/file/d/') && ad['رابط الفيديو'].includes('/preview')) {
+                const iframe = document.createElement('iframe');
+                iframe.width = "100%";
+                iframe.height = "315";
+                iframe.src = ad['رابط الفيديو']; // استخدم رابط المعاينة مباشرة
+                iframe.frameBorder = "0";
+                iframe.allow = "autoplay; encrypted-media"; // allow autoplay if possible
+                iframe.allowFullscreen = true;
+                mediaContainer.appendChild(iframe);
+                console.log(`Attempting to embed Google Drive video via iframe for Ad ID: ${ad['معرف الإعلان']}`);
+            }
+            // عرض الفيديو الرئيسي (لروابط الفيديو الأخرى غير Google Drive)
+            else if (ad['رابط الفيديو'] && ad['رابط الفيديو'].startsWith('http')) {
                 const video = document.createElement('video');
                 video.controls = true;
                 video.src = ad['رابط الفيديو'];
                 mediaContainer.appendChild(video);
             }
+            // *** END OF MODIFICATION FOR GOOGLE DRIVE IFRAME ***
+
             // عرض فيديو يوتيوب
             // **هام: تأكد أن عمود "رابط يوتيوب" يحتوي على روابط يوتيوب فعلية (youtube.com/embed/...) وليس روابط Googleusercontent أو Drive**
             if (ad['رابط يوتيوب'] && ad['رابط يوتيوب'].startsWith('http')) {

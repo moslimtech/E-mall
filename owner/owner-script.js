@@ -5,7 +5,7 @@ if ('serviceWorker' in navigator) {
         // يجب أن يكون نطاق Service Worker مساويًا أو أوسع من المسار الذي يتواجد فيه ملف manifest.json
         // "/owner/sw.js" هو المسار لملف Service Worker نفسه
         // { scope: '/owner/' } يحدد أن هذا Service Worker يتحكم في كل المسارات تحت /owner/
-        navigator.serviceWorker.register('/owner/sw.js', { scope: '/owner/' })
+        navigator.serviceWorker.register('/E-mall/owner/sw.js', { scope: '/E-mall/owner/' })
             .then(registration => {
                 console.log('Owner Service Worker registered with scope:', registration.scope);
             })

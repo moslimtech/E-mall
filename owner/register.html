@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
@@ -52,7 +52,68 @@
     </main>
     <footer>
         <p>© 2025 دليل الأماكن. جميع الحقوق محفوظة.</p>
+    </footer> -->
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل حساب جديد - دليل الأماكن</title>
+    <link rel="stylesheet" href="../style.css"> 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="لوحة تحكم المعلن">
+</head>
+<body>
+    <header>
+        <h1>تسجيل حساب جديد</h1>
+        <a href="../index.html" class="back-to-home-button">العودة للرئيسية</a> 
+    </header>
+    <main>
+        <div class="container register-form-container">
+            <h2>سجل مكانك أو إعلانك الآن</h2>
+            <p>املأ النموذج التالي لإنشاء حساب جديد والبدء في إدارة معلومات مكانك وإعلاناتك.</p>
+            
+            <form id="registration-form">
+                <div class="form-group">
+                    <label for="shop-name">اسم المحل/المكان:</label>
+                    <input type="text" id="shop-name" name="shopName" required>
+                </div>
+                <div class="form-group">
+                    <label for="owner-email">البريد الإلكتروني:</label>
+                    <input type="email" id="owner-email" name="ownerEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="phone-number">رقم التواصل:</label>
+                    <input type="tel" id="phone-number" name="phoneNumber" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">كلمة المرور:</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <div class="form-group">
+                    <label for="confirm-password">تأكيد كلمة المرور:</label>
+                    <input type="password" id="confirm-password" name="confirmPassword" required>
+                </div>
+                
+                <button type="submit" class="submit-button">تسجيل</button>
+            </form>
+
+            <p class="login-prompt">هل لديك حساب بالفعل؟ <a href="login.html">تسجيل الدخول</a></p>
+        </div>
+    </main>
+    <footer>
+        <p>© 2025 دليل الأماكن. جميع الحقوق محفوظة.</p>
     </footer>
+
+    <script src="owner-script.js"></script> 
+</body>
+</html>
 
     <script src="owner-script.js"></script> 
 </body>

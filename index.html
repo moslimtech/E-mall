@@ -8,8 +8,17 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
+    <div class="bg-slider">
+        <img src="https://images.pexels.com/photos/33085087/pexels-photo-33085087.jpeg" class="bg-slider-img active" alt="bg1">
+        <img src="https://images.pexels.com/photos/2351450/pexels-photo-2351450.jpeg" class="bg-slider-img" alt="bg2">
+        <img src="https://images.pexels.com/photos/5868127/pexels-photo-5868127.jpeg" class="bg-slider-img" alt="bg3">
+        <img src="https://images.pexels.com/photos/264512/pexels-photo-264512.jpeg" class="bg-slider-img" alt="bg4">
+        <img src="https://images.pexels.com/photos/2767756/pexels-photo-2767756.jpeg" class="bg-slider-img" alt="bg5">
+        <img src="https://images.pexels.com/photos/2767756/pexels-photo-2767756.jpeg" class="bg-slider-img" alt="bg6">
+    </div>
     <header>
         <h1>دليل الأماكن</h1>
+        <div class="dev-signature">Muslim Tech <span>_ مسلم تيك</span></div>
     </header>
     <main>
         <div id="filters-container" class="container filters-container">
@@ -46,10 +55,60 @@
                 </div>
         </div>
     </main>
+    <div class="banner-footer">
+        <span>© 2025 دليل الأماكن. جميع الحقوق محفوظة. مع المطور 
+            <a href="https://wa.me/201108857529" target="_blank" class="whatsapp-link-footer">Muslim Tech _ مسلم تيك</a>
+            وده رقم الواتس 
+            <a href="https://wa.me/201108857529" target="_blank" class="whatsapp-link-footer">+20 110 885 7529</a>
+        </span>
+    </div>
     <footer>
-        <p>© 2025 دليل الأماكن. جميع الحقوق محفوظة.</p>
+        <!-- تم نقل الحقوق إلى البانر السفلي -->
     </footer>
 
+    <!-- مودال عرض الصور -->
+    <div id="img-modal" class="img-modal">
+        <span class="img-modal-close">&times;</span>
+        <img class="img-modal-content" id="img-modal-content" alt="صورة مكبرة">
+    </div>
     <script src="script.js"></script>
+    <script>
+    // سلايدر خلفية تلقائي مع تأثير تلاشي
+    const bgImgs = document.querySelectorAll('.bg-slider-img');
+    let bgIndex = 0;
+    setInterval(() => {
+        bgImgs[bgIndex].classList.remove('active');
+        bgIndex = (bgIndex + 1) % bgImgs.length;
+        bgImgs[bgIndex].classList.add('active');
+    }, 7000);
+
+    // كود فتح الصور في مودال عند الضغط عليها
+    document.addEventListener('DOMContentLoaded', function() {
+        const modal = document.getElementById('img-modal');
+        const modalImg = document.getElementById('img-modal-content');
+        const closeBtn = document.querySelector('.img-modal-close');
+        // استهداف كل صور الشعار وصور الإعلانات
+        function bindImgModal() {
+            document.querySelectorAll('.logo, .ad-media-container img').forEach(img => {
+                img.style.cursor = 'zoom-in';
+                img.onclick = function() {
+                    modal.style.display = 'flex';
+                    modalImg.src = this.src;
+                    modalImg.alt = this.alt;
+                };
+            });
+        }
+        bindImgModal();
+        // إعادة الربط عند تحديث الإعلانات أو التفاصيل
+        const observer = new MutationObserver(bindImgModal);
+        observer.observe(document.body, { childList: true, subtree: true });
+        closeBtn.onclick = function() {
+            modal.style.display = 'none';
+        };
+        modal.onclick = function(e) {
+            if (e.target === modal) modal.style.display = 'none';
+        };
+    });
+    </script>
 </body>
 </html>

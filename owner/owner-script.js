@@ -61,7 +61,7 @@ if ('serviceWorker' in navigator) {
 }
 
 // الرابط الذي حصلت عليه بعد نشر Google Apps Script كتطبيق ويب
-const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxkKrHyeEAgSkLz2QHzSgA5w09dIvfFJgDUMkP373f-VVAZmahHalr0GOYojqK41x6E/exec'; // <--- استبدل هذا برابط تطبيق الويب الفعلي الخاص بك
+const WEB_APP_URL = 'https://script.googleusercontent.com/macros/echo?user_content_key=AehSKLhA4awSVtAM0jhixTugIjuQSQlffevLu6hQf5ozsaGTFaGQZ6ekJNzrQfZZvXepnE4ofJYB52sDufCRVlmKZs3JCUO_mOrM0NiNzVzQ63NYG7_IP8cnmTY_wvmHQocfy1q8sqeJMhM83OglgBjo77x5ec6uRvEA7opj9Yztso1OKEVioCU4PHQtQnLx6UgzrUbA6BPt24GVrg8gxd3A3hjFxOrqSB7gFr5ZpYBKyFR6yjvAGeC-_ut-yX6Hbsv5QcW73Xtko-NyK3PIC4Jt1x_fFDqJpQ&lib=MEq4a3E8_wouS_Lt5O_fFMoRK8DgnPr4P'; // <--- استبدل هذا برابط تطبيق الويب الفعلي الخاص بك
 
 document.addEventListener('DOMContentLoaded', () => {
     const registrationForm = document.getElementById('registration-form');

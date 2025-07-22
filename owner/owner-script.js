@@ -59,7 +59,7 @@ if ('serviceWorker' in navigator) {
 }
 
 // الرابط الذي حصلت عليه بعد نشر Google Apps Script كتطبيق ويب
-const WEB_APP_URL = 'YOUR_DEPLOYED_WEB_APP_URL'; // <--- استبدل هذا برابط تطبيق الويب الفعلي الخاص بك
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxkKrHyeEAgSkLz2QHzSgA5w09dIvfFJgDUMkP373f-VVAZmahHalr0GOYojqK41x6E/exec'; // <--- استبدل هذا برابط تطبيق الويب الفعلي الخاص بك
 
 document.addEventListener('DOMContentLoaded', () => {
     const registrationForm = document.getElementById('registration-form');

@@ -20,34 +20,12 @@ header {
     position: sticky; /* جعل الرأسية ثابتة عند التمرير */
     top: 0;
     z-index: 1000; /* التأكد من ظهورها فوق العناصر الأخرى */
-    display: flex; /* لترتيب العناصر داخله */
-    justify-content: space-between; /* توزيع العناصر */
-    align-items: center; /* توسيط عمودي */
 }
 
 header h1 {
     margin: 0;
     font-size: 2.2rem;
     letter-spacing: 0.5px;
-    flex-grow: 1; /* للسماح للعنوان بأخذ المساحة المتاحة */
-}
-
-/* زر العودة للرئيسية */
-.back-to-home-button {
-    background-color: #5a6268; /* لون رمادي */
-    color: white;
-    padding: 8px 15px;
-    border: none;
-    border-radius: 5px;
-    text-decoration: none;
-    font-size: 0.9rem;
-    transition: background-color 0.3s ease;
-    margin-right: 15px; /* مسافة عن اليمين */
-    white-space: nowrap; /* منع انقسام النص */
-}
-
-.back-to-home-button:hover {
-    background-color: #495057;
 }
 
 /* Main Content Area */
@@ -57,95 +35,334 @@ main {
     margin: 20px auto; /* توسيط المحتوى وإضافة مسافة من الأعلى */
 }
 
-/* Containers for Forms/Content */
-.container {
+/* Filters Container */
+#filters-container {
     background-color: #fff;
-    padding: 30px;
+    padding: 20px;
     border-radius: 10px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    max-width: 500px;
-    margin: 30px auto;
-    text-align: center;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    margin-bottom: 30px;
+    display: flex;
+    flex-wrap: wrap; /* للسماح للعناصر بالانتقال لسطر جديد على الشاشات الصغيرة */
+    gap: 15px; /* مسافة بين عناصر الفلتر */
+    justify-content: center; /* توسيط عناصر الفلتر */
+    align-items: center;
 }
 
-/* Specific form container styles */
-.login-form-container,
-.register-form-container {
+.filter-group {
     display: flex;
     flex-direction: column;
-    align-items: center; /* توسيط العناصر أفقياً */
-    justify-content: center;
+    min-width: 180px; /* لتوفير مساحة كافية للعناصر */
 }
 
-.container h2 {
-    color: #007bff;
-    margin-bottom: 20px;
-    font-size: 1.8rem;
-}
-
-.container p {
-    color: #555;
-    margin-bottom: 25px;
-    line-height: 1.8;
-}
-
-/* Form Grouping */
-.form-group {
-    margin-bottom: 15px;
-    width: 100%; /* اجعل مجموعة النموذج تأخذ عرض الحاوية */
-    text-align: right;
-}
-
-label {
-    display: block;
-    margin-bottom: 8px;
+.filter-group label {
     font-weight: bold;
-    color: #333;
-}
-
-input[type="text"],
-input[type="email"],
-input[type="tel"],
-input[type="password"] {
-    width: calc(100% - 20px); /* 100% ناقص 10px من كل جانب للـ padding */
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    font-size: 1rem;
-    box-sizing: border-box; /* لضمان أن العرض يشمل الـ padding */
-}
-
-.submit-button {
-    background-color: #007bff;
-    color: white;
-    padding: 12px 25px;
-    border: none;
-    border-radius: 5px;
-    font-size: 1.1rem;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    width: auto; /* السماح للزر بأخذ حجم المحتوى */
-    margin-top: 20px;
-    align-self: center; /* لتوسيط الزر داخل flex container */
-}
-
-.submit-button:hover {
-    background-color: #0056b3;
-}
-
-.login-prompt, .register-prompt {
-    margin-top: 25px;
+    margin-bottom: 8px;
+    color: #555;
     font-size: 0.95rem;
 }
 
-.login-prompt a, .register-prompt a {
+.filter-group select,
+.filter-group button {
+    padding: 10px 15px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background-color: #f8f8f8;
+    color: #333;
+    appearance: none; /* لإزالة السهم الافتراضي في select */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23000000%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13.6-6.4H18.6c-5%200-9.3%203.2-11.6%207.7-2.3%204.6-1.5%2010.2%202.1%2014L139.7%20202c4.9%205.6%2012.7%205.6%2017.6%200l126.1-115.5c3.5-3.8%204.4-9.4%202.1-14z%22%2F%3E%3C%2Fsvg%3E'); /* سهم مخصص */
+    background-repeat: no-repeat;
+    background-position: left 15px center; /* وضع السهم على اليسار بسبب rtl */
+    background-size: 10px;
+}
+
+.filter-group select:focus,
+.filter-group button:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+    outline: none;
+}
+
+.filter-group button {
+    background-color: #28a745; /* زر أخضر لإعادة التعيين */
+    color: white;
+    cursor: pointer;
+    font-weight: bold;
+    min-width: 150px;
+}
+
+.filter-group button:hover {
+    background-color: #218838;
+}
+
+/* Places Container (Grid Layout) */
+#places-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* 280px كحد أدنى، عمود واحد على الشاشات الصغيرة */
+    gap: 25px; /* مسافة بين البطاقات */
+}
+
+.place-card {
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    position: relative; /* لتحديد موقع شارة العروض ومؤشر الحالة */
+    overflow: hidden; /* لإخفاء أي جزء زائد من الصورة إذا كانت كبيرة */
+}
+
+.place-card:hover {
+    transform: translateY(-8px); /* رفع البطاقة قليلاً عند التحويم */
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+}
+
+.place-card .status-indicator {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    z-index: 10;
+}
+
+.status-open {
+    background-color: #28a745; /* أخضر للمفتوح */
+}
+
+.status-prayer {
+    background-color: #ffc107; /* أصفر للصلاة */
+}
+
+.status-closed {
+    background-color: #dc3545; /* أحمر للمغلق */
+}
+
+.ad-badge {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    background-color: #ff6f00; /* برتقالي للعروض */
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.ad-badge i {
+    font-size: 0.9rem;
+}
+
+
+.place-card .logo {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%; /* لجعل الشعار دائريًا */
+    object-fit: cover; /* لضمان تغطية الصورة للمساحة */
+    margin-bottom: 15px;
+    border: 3px solid #eee; /* إطار خفيف للشعار */
+}
+
+.place-card h3 {
+    margin: 10px 0 8px;
+    font-size: 1.5rem;
+    color: #007bff;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.place-card p {
+    margin: 5px 0;
+    font-size: 0.95rem;
+    color: #666;
+}
+
+.no-results {
+    text-align: center;
+    grid-column: 1 / -1; /* لجعل رسالة "لا توجد نتائج" تمتد على عرض الشبكة بالكامل */
+    font-size: 1.2rem;
+    color: #777;
+    padding: 40px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+/* Place Details Container */
+#place-details-container {
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+}
+
+#place-detail-name {
+    font-size: 2.5rem;
+    color: #007bff;
+    margin-bottom: 20px;
+    text-align: center;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 15px;
+}
+
+#place-detail-info p {
+    margin: 10px 0;
+    font-size: 1.1rem;
+}
+
+#place-detail-info strong {
+    color: #444;
+}
+
+#place-detail-info a {
     color: #007bff;
     text-decoration: none;
     font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
 }
 
-.login-prompt a:hover, .register-prompt a:hover {
+#place-detail-info a:hover {
     text-decoration: underline;
+    color: #0056b3;
+}
+
+#place-detail-info a i {
+    font-size: 1.2rem;
+}
+
+/* Ads Container */
+#ads-container {
+    margin-top: 30px;
+    border-top: 2px dashed #eee;
+    padding-top: 25px;
+}
+
+#ads-container h3 {
+    text-align: center;
+    color: #007bff;
+    margin-bottom: 25px;
+    font-size: 2rem;
+}
+
+.ad-card {
+    background-color: #f9f9f9;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.ad-card h4 {
+    color: #333;
+    font-size: 1.6rem;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.ad-card p {
+    font-size: 1rem;
+    color: #555;
+    margin-bottom: 15px;
+}
+
+.ad-media-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 15px;
+    justify-content: center; /* توسيط الصور والفيديوهات */
+}
+
+.ad-media-container img,
+.ad-media-container video,
+.ad-media-container iframe {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    object-fit: cover; /* لضمان عدم تشوه الصور والفيديوهات */
+}
+
+.ad-media-container img {
+    max-height: 250px; /* تحديد أقصى ارتفاع للصور */
+}
+
+
+.ad-links {
+    text-align: center;
+    margin-top: 20px;
+    border-top: 1px dashed #eee;
+    padding-top: 15px;
+}
+
+.ad-links a {
+    display: inline-flex; /* لجعل الروابط بجانب بعضها البعض */
+    align-items: center;
+    gap: 8px;
+    margin: 0 10px;
+    padding: 10px 15px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.ad-links .whatsapp-link {
+    background-color: #25d366;
+    color: white;
+}
+
+.ad-links .whatsapp-link:hover {
+    background-color: #1da851;
+}
+
+.ad-links .email-link {
+    background-color: #007bff;
+    color: white;
+}
+
+.ad-links .email-link:hover {
+    background-color: #0056b3;
+}
+
+
+/* Back Button */
+#back-button {
+    background-color: #6c757d; /* لون رمادي مناسب */
+    color: white;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    font-weight: bold;
+    display: block; /* لجعل الزر يأخذ سطرًا كاملاً */
+    margin: 25px auto 0; /* توسيط الزر */
+    width: fit-content; /* جعل العرض بحجم المحتوى */
+    transition: background-color 0.3s ease;
+}
+
+#back-button:hover {
+    background-color: #5a6268;
 }
 
 /* Utility Class */
@@ -159,20 +376,78 @@ input[type="password"] {
         font-size: 1.8rem;
     }
 
-    .container {
-        margin: 15px auto;
-        padding: 20px;
+    #filters-container {
+        flex-direction: column; /* جعل الفلاتر عمودية على الشاشات الصغيرة */
+        align-items: stretch; /* تمتد على العرض الكامل */
     }
 
-    input[type="text"],
-    input[type="email"],
-    input[type="tel"],
-    input[type="password"] {
+    .filter-group {
+        width: 100%;
+        min-width: unset;
+    }
+
+    .place-card {
+        padding: 15px;
+    }
+
+    .place-card .logo {
+        width: 80px;
+        height: 80px;
+    }
+
+    .place-card h3 {
+        font-size: 1.3rem;
+    }
+
+    .place-card p {
         font-size: 0.9rem;
     }
 
-    .submit-button {
-        padding: 10px 20px;
+    #place-detail-name {
+        font-size: 2rem;
+    }
+
+    #place-detail-info p {
         font-size: 1rem;
+    }
+
+    .ad-card h4 {
+        font-size: 1.4rem;
+    }
+
+    .ad-card p {
+        font-size: 0.95rem;
+    }
+
+    .ad-links a {
+        margin: 5px;
+        padding: 8px 12px;
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 480px) {
+    main {
+        padding: 10px;
+        margin: 10px auto;
+    }
+
+    #filters-container {
+        padding: 15px;
+        gap: 10px;
+    }
+
+    .filter-group select,
+    .filter-group button {
+        padding: 8px 12px;
+        font-size: 0.9rem;
+    }
+
+    #places-container {
+        grid-template-columns: 1fr; /* عمود واحد فقط على أصغر الشاشات */
+    }
+
+    .place-card {
+        padding: 10px;
     }
 }

@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     // تأكد من أن هذا الرابط صحيح ويشير إلى نشرك لـ Google Apps Script
     // هذا الرابط يجب أن يعرض بيانات JSON مباشرة عند فتحه في المتصفح
-    const jsonUrl = 'https://script.google.com/macros/s/AKfycbxkKrHyeEAgSkLz2QHzSgA5w09dIvfFJgDUMkP373f-VVAZmahHalr0GOYojqK41x6E/exec'; // هذا هو نفس الرابط الذي استخدمته في JSON السابق
+    const jsonUrl = 'https://script.google.com/macros/s/AKfycbwcyqY4HfjGUGLAtslLd3m-bXh3pBNz6TsuWpjCXpJpJBzL_ElbaGCi-pjOiISSXKXtkg/exec'; // هذا هو نفس الرابط الذي استخدمته في JSON السابق
 
     // العناصر الرئيسية في DOM
     const placesContainer = document.getElementById('places-container');

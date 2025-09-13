@@ -382,12 +382,15 @@ function updatePackageCardAppearance(packageId, status, isTrialUsed = false) {
   // إزالة جميع كلاسات الأزرار السابقة
   button.classList.remove('btn-activate', 'btn-active', 'btn-pending', 'btn-expired', 'btn-trial-used');
 
+  const price = Number(button.dataset.price || 0);
+
   switch (status) {
     case 'مفعلة':
       card.classList.add('active');
       button.classList.add('btn-active');
       button.textContent = '✓ مُفعّلة حالياً';
       button.disabled = true;
+      button.style.opacity = '0.6';
       break;
 
     case 'قيد الدفع':
@@ -395,6 +398,7 @@ function updatePackageCardAppearance(packageId, status, isTrialUsed = false) {
       button.classList.add('btn-pending');
       button.textContent = '⏳ قيد التحقق من الدفع';
       button.disabled = true;
+      button.style.opacity = '0.6';
       break;
 
     case 'منتهية':
@@ -402,18 +406,22 @@ function updatePackageCardAppearance(packageId, status, isTrialUsed = false) {
       button.classList.add('btn-expired');
       button.textContent = '🔄 تجديد الاشتراك';
       button.disabled = false;
+      button.style.opacity = '1';
       break;
 
     default:
       // فحص إذا كانت باقة تجريبية مستخدمة سابقاً
-      if (isTrialUsed && button.dataset.price === '0') {
+      if (isTrialUsed && price === 0) {
+        card.classList.add('expired');
         button.classList.add('btn-trial-used');
         button.textContent = '❌ تم استخدامها سابقاً';
         button.disabled = true;
+        button.style.opacity = '0.6';
       } else {
         button.classList.add('btn-activate');
-        button.textContent = button.dataset.price === '0' ? '🚀 تفعيل تجريبي مجاني' : '💳 اختر هذه الباقة';
+        button.textContent = price === 0 ? '🚀 تفعيل تجريبي مجاني' : '💳 اختر هذه الباقة';
         button.disabled = false;
+        button.style.opacity = '1';
       }
       break;
   }
@@ -1676,10 +1684,8 @@ async function checkIfTrialIsUsed(placeId) {
     const place = data && data.place ? data.place : null;
     if (!place || !place.raw) return false;
     const trialUsed = String(place.raw['حالة الباقة التجريبية']).toLowerCase() === 'true';
-    const pkgStatus = String(place.raw['حالة الباقة'] || '').trim();
-    // لا نمنع التجريبية إن كانت نشطة الآن. نمنع فقط إذا استخدمت سابقًا وحالتها الحالية منتهية
-    if (trialUsed && pkgStatus === 'منتهية') return true;
-    return false;
+    // إذا تم استخدام الباقة التجريبية مسبقاً، منع استخدامها مرة أخرى
+    return trialUsed;
   } catch (e) {
     console.warn('checkIfTrialIsUsed error', e);
     return false;

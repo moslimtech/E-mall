@@ -90,8 +90,13 @@ document.addEventListener('DOMContentLoaded', () => {
   if (typeof updateAdsTabVisibility === 'function') updateAdsTabVisibility();
 
   const stored = getLoggedPlace();
-  if (stored && stored.id) showPlaceStatusBar(stored);
-  else hidePlaceStatusBar();
+  if (stored && stored.id) {
+    showPlaceStatusBar(stored);
+    showPackageStatusBar(stored);
+  } else {
+    hidePlaceStatusBar();
+    hidePackageStatusBar();
+  }
   initPlaceStatusButtons();
 
   updateActivateButtonState();
@@ -981,7 +986,10 @@ async function setLoggedInUI(place) {
   if (typeof updateAdsTabVisibility === 'function') updateAdsTabVisibility();
   if (place.id) { if (typeof checkAdQuotaAndToggle === 'function') checkAdQuotaAndToggle(place.id); if (typeof loadAdsForPlace === 'function') loadAdsForPlace(place.id); }
 
-  try { showPlaceStatusBar(place); } catch (e) { console.warn('could not show status bar', e); }
+  try { 
+    showPlaceStatusBar(place); 
+    showPackageStatusBar(place);
+  } catch (e) { console.warn('could not show status bar', e); }
   updateActivateButtonState();
 }
 
@@ -990,6 +998,7 @@ function setLoggedOutUI() {
   if (loginBtn) loginBtn.style.display = 'inline-block'; if (logoutBtn) logoutBtn.style.display = 'none'; if (loggedInUser) { loggedInUser.style.display = 'none'; loggedInUser.textContent = ''; }
   clearLoggedPlace();
   hidePlaceStatusBar();
+  hidePackageStatusBar();
   const tabAds = document.getElementById('tab-ads'); if (tabAds) tabAds.style.display = 'none';
   const placeSelects = document.querySelectorAll('select[name="placeId"]'); placeSelects.forEach(ps => { ps.disabled = false; });
   if (typeof updateAdsTabVisibility === 'function') updateAdsTabVisibility();
@@ -1145,6 +1154,12 @@ async function choosePackageAPI(packageId) {
   } finally {
     await refreshPackageUIFromDashboard();
     updateActivateButtonState();
+    
+    // تحديث شريط حالة الباقة
+    const logged = getLoggedPlace();
+    if (logged) {
+      showPackageStatusBar(logged);
+    }
   }
 }
 
@@ -1290,6 +1305,119 @@ function initPlaceStatusButtons() {
       await updatePlaceStatus(status, btn);
     });
   });
+}
+
+/* ========== Package Status Bar ========== */
+function showPackageStatusBar(place) {
+  const bar = document.getElementById('packageStatusBar');
+  const title = document.getElementById('packageStatusTitle');
+  const details = document.getElementById('packageStatusDetails');
+  const countdown = document.getElementById('packageStatusCountdown');
+  
+  if (!bar || !place || !place.raw) {
+    hidePackageStatusBar();
+    return;
+  }
+
+  const pkgStatus = String(place.raw['حالة الباقة'] || '').trim();
+  const pkgId = String(place.raw['الباقة'] || '').trim();
+  const startRaw = place.raw['تاريخ بداية الاشتراك'] || '';
+  const endRaw = place.raw['تاريخ نهاية الاشتراك'] || '';
+  const startDate = parseDateISO(startRaw);
+  const endDate = parseDateISO(endRaw);
+
+  // اسم الباقة من lookups إن توفر
+  let packageName = '';
+  try {
+    if (window.lastLookups && Array.isArray(lastLookups.packages)) {
+      const f = lastLookups.packages.find(p => String(p.id) === pkgId);
+      if (f) packageName = f.name;
+    }
+  } catch {}
+
+  if (!pkgStatus) {
+    hidePackageStatusBar();
+    return;
+  }
+
+  bar.style.display = 'block';
+
+  if (pkgStatus === 'مفعلة') {
+    const pn = packageName || (pkgId ? `الباقة ${pkgId}` : 'باقة غير معروفة');
+    if (title) title.textContent = `📦 ${pn}`;
+    
+    let detailsText = 'حالة الباقة: مفعلة';
+    if (startDate && endDate) {
+      const sTxt = startDate.toISOString().split('T')[0];
+      const eTxt = endDate.toISOString().split('T')[0];
+      detailsText += ` • البداية: ${sTxt} • النهاية: ${eTxt}`;
+    }
+    if (details) details.textContent = detailsText;
+
+    if (endDate) {
+      startPackageStatusCountdown(endDate, countdown);
+    } else {
+      if (countdown) countdown.textContent = 'لا يوجد تاريخ انتهاء';
+    }
+  } else if (pkgStatus === 'قيد الدفع') {
+    const pn = packageName || (pkgId ? `الباقة ${pkgId}` : 'باقة غير معروفة');
+    if (title) title.textContent = `⏳ ${pn}`;
+    if (details) details.textContent = 'حالة الباقة: قيد التحقق من الدفع';
+    if (countdown) countdown.textContent = 'جاري التحقق...';
+  } else if (pkgStatus === 'منتهية') {
+    const pn = packageName || (pkgId ? `الباقة ${pkgId}` : 'باقة غير معروفة');
+    if (title) title.textContent = `❌ ${pn}`;
+    if (details) details.textContent = 'حالة الباقة: منتهية';
+    if (countdown) countdown.textContent = 'انتهت';
+  } else {
+    const pn = packageName || (pkgId ? `الباقة ${pkgId}` : 'باقة غير معروفة');
+    if (title) title.textContent = `📦 ${pn}`;
+    if (details) details.textContent = `حالة الباقة: ${pkgStatus}`;
+    if (countdown) countdown.textContent = 'غير متاح';
+  }
+}
+
+function hidePackageStatusBar() {
+  const bar = document.getElementById('packageStatusBar');
+  if (bar) bar.style.display = 'none';
+}
+
+let packageStatusCountdownTimer = null;
+
+function startPackageStatusCountdown(endDate, countdownEl) {
+  if (!countdownEl || !endDate) return;
+  
+  clearInterval(packageStatusCountdownTimer);
+  
+  function updateCountdown() {
+    const now = new Date();
+    const diff = endDate.getTime() - now.getTime();
+    
+    if (diff <= 0) {
+      countdownEl.textContent = 'انتهت';
+      countdownEl.className = 'package-countdown-display countdown-crit';
+      clearInterval(packageStatusCountdownTimer);
+      return;
+    }
+    
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    
+    countdownEl.textContent = `متبقي ${days} يوم و${hours} ساعة`;
+    
+    // تحديث الألوان حسب الوقت المتبقي
+    countdownEl.className = 'package-countdown-display';
+    if (days <= 2) {
+      countdownEl.classList.add('countdown-crit');
+    } else if (days <= 7) {
+      countdownEl.classList.add('countdown-warn');
+    } else {
+      countdownEl.classList.add('countdown-ok');
+    }
+  }
+  
+  updateCountdown();
+  packageStatusCountdownTimer = setInterval(updateCountdown, 60 * 1000); // تحديث كل دقيقة
 }
 
 function showPlaceStatusBar(place) {

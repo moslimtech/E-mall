@@ -947,7 +947,7 @@
                     <i class="fas fa-bullhorn"></i>
                     الإعلانات العامة
                 </button>
-                <button id="themeToggleBtn" class="theme-toggle" title="تغيير المظهر">
+                <button id="themeToggleBtn" class="theme-toggle" title="تغيير المظهر" onclick="toggleTheme()">
                     <i id="themeIcon" class="fas fa-moon"></i>
                     <span id="themeLabel" style="display: none;">الوضع الليلي</span>
                 </button>
@@ -1296,6 +1296,35 @@
             }
         }
 
+        // دالة مساعدة للتحقق من وجود دالة
+        function isFunction(functionToCheck) {
+            return functionToCheck && {}.toString.call(functionToCheck) === '[object Function]';
+        }
+
+        // دالة تبديل المظهر
+        function toggleTheme() {
+            const cur = (localStorage.getItem('ban_theme') === 'dark') ? 'dark' : 'light';
+            applyTheme(cur === 'dark' ? 'light' : 'dark');
+        }
+
+        // دالة تطبيق المظهر
+        function applyTheme(theme) {
+            if (theme === 'dark') {
+                document.body.classList.add('dark');
+                const icon = document.getElementById('themeIcon');
+                const lbl = document.getElementById('themeLabel');
+                if (icon) icon.className = 'fas fa-sun';
+                if (lbl) lbl.textContent = 'الوضع النهاري';
+            } else {
+                document.body.classList.remove('dark');
+                const icon = document.getElementById('themeIcon');
+                const lbl = document.getElementById('themeLabel');
+                if (icon) icon.className = 'fas fa-moon';
+                if (lbl) lbl.textContent = 'الوضع الليلي';
+            }
+            try { localStorage.setItem('ban_theme', theme || 'light'); } catch(e){}
+        }
+
         // دالة لتحديث مظهر بطاقات الباقات بناءً على الحالة
         function updatePackageCardAppearance(packageId, status, isTrialUsed = false) {
             const card = document.querySelector(`[data-package-id="${packageId}"]`);
@@ -1376,6 +1405,16 @@
         ////////////////////////////////////////////////////////////////////////////////////////////////////
 
         document.addEventListener('DOMContentLoaded', function() {
+            // تهيئة المظهر
+            try {
+                const saved = localStorage.getItem('ban_theme');
+                if (saved) applyTheme(saved);
+                else {
+                    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                    applyTheme(prefersDark ? 'dark' : 'light');
+                }
+            } catch (e) { applyTheme('light'); }
+
             // انتظار تحميل script.js ثم تشغيل الدوال
             setTimeout(function() {
                 if (typeof refreshAllPackageCards !== 'undefined') {

@@ -505,6 +505,7 @@
             border-color: var(--success-color);
             background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%);
             box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
+            position: relative;
         }
 
         body.dark .pkg-card.active {
@@ -527,6 +528,7 @@
             border-radius: 12px;
             font-size: 0.75rem;
             font-weight: 600;
+            z-index: 1;
         }
 
         .pkg-card.pending {
@@ -583,6 +585,20 @@
             border-radius: 12px;
             font-size: 0.75rem;
             font-weight: 600;
+            z-index: 1;
+        }
+
+        /* الباقة المجانية المستخدمة */
+        .pkg-card.expired .btn-trial-used {
+            background: #9ca3af;
+            color: white;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .pkg-card.expired .btn-trial-used:hover {
+            background: #9ca3af;
+            transform: none;
         }
 
         .choose-pkg {
@@ -1339,12 +1355,15 @@
             // إزالة جميع كلاسات الأزرار السابقة
             button.classList.remove('btn-activate', 'btn-active', 'btn-pending', 'btn-expired', 'btn-trial-used');
 
+            const price = Number(button.dataset.price || 0);
+
             switch (status) {
                 case 'مفعلة':
                     card.classList.add('active');
                     button.classList.add('btn-active');
                     button.textContent = '✓ مُفعّلة حالياً';
                     button.disabled = true;
+                    button.style.opacity = '0.6';
                     break;
 
                 case 'قيد الدفع':
@@ -1352,6 +1371,7 @@
                     button.classList.add('btn-pending');
                     button.textContent = '⏳ قيد التحقق من الدفع';
                     button.disabled = true;
+                    button.style.opacity = '0.6';
                     break;
 
                 case 'منتهية':
@@ -1359,18 +1379,22 @@
                     button.classList.add('btn-expired');
                     button.textContent = '🔄 تجديد الاشتراك';
                     button.disabled = false;
+                    button.style.opacity = '1';
                     break;
 
                 default:
                     // فحص إذا كانت باقة تجريبية مستخدمة سابقاً
-                    if (isTrialUsed && button.dataset.price === '0') {
+                    if (isTrialUsed && price === 0) {
+                        card.classList.add('expired');
                         button.classList.add('btn-trial-used');
                         button.textContent = '❌ تم استخدامها سابقاً';
                         button.disabled = true;
+                        button.style.opacity = '0.6';
                     } else {
                         button.classList.add('btn-activate');
-                        button.textContent = button.dataset.price === '0' ? '🚀 تفعيل تجريبي مجاني' : '💳 اختر هذه الباقة';
+                        button.textContent = price === 0 ? '🚀 تفعيل تجريبي مجاني' : '💳 اختر هذه الباقة';
                         button.disabled = false;
+                        button.style.opacity = '1';
                     }
                     break;
             }

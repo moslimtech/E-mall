@@ -1087,6 +1087,12 @@
                 <button onclick="testPackageStatusBar()" style="background: #10b981; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; margin: 2px;">
                     اختبار شريط الباقة
                 </button>
+                <button onclick="forceRefreshPlaceData()" style="background: #f59e0b; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; margin: 2px;">
+                    تحديث البيانات
+                </button>
+                <button onclick="debugStoredData()" style="background: #6b7280; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; margin: 2px;">
+                    فحص البيانات
+                </button>
             </div>
         </div>
 
@@ -1124,6 +1130,11 @@
             <div id="packageInfoCard" style="display: none;">
                 <div id="packageInfoText"></div>
                 <div id="packageInfoCountdown"></div>
+                <div style="margin-top: 10px; text-align: center;">
+                    <button onclick="forceRefreshPlaceData()" style="background: #f59e0b; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px;">
+                        🔄 تحديث حالة الباقة
+                    </button>
+                </div>
             </div>
 
             <form id="placeForm">

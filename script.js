@@ -1354,8 +1354,20 @@ function showPackageStatusBar(place) {
     }
     if (details) details.textContent = detailsText;
 
+    console.log('Package status active:', { 
+      pkgStatus, 
+      endDate: endDate ? endDate.toISOString() : 'null',
+      countdown: countdown ? 'exists' : 'missing'
+    });
+
     if (endDate) {
-      startPackageStatusCountdown(endDate, countdown);
+      // التأكد من أن العداد موجود قبل بدء العدّاد
+      if (countdown) {
+        countdown.textContent = 'جاري التحميل...';
+        startPackageStatusCountdown(endDate, countdown);
+      } else {
+        console.error('Countdown element not found!');
+      }
     } else {
       if (countdown) countdown.textContent = 'لا يوجد تاريخ انتهاء';
     }
@@ -1385,13 +1397,23 @@ function hidePackageStatusBar() {
 let packageStatusCountdownTimer = null;
 
 function startPackageStatusCountdown(endDate, countdownEl) {
-  if (!countdownEl || !endDate) return;
+  if (!countdownEl || !endDate) {
+    console.log('startPackageStatusCountdown: missing elements', { countdownEl, endDate });
+    return;
+  }
   
   clearInterval(packageStatusCountdownTimer);
   
   function updateCountdown() {
     const now = new Date();
     const diff = endDate.getTime() - now.getTime();
+    
+    console.log('Countdown update:', { 
+      now: now.toISOString(), 
+      endDate: endDate.toISOString(), 
+      diff: diff,
+      diffDays: Math.floor(diff / (1000 * 60 * 60 * 24))
+    });
     
     if (diff <= 0) {
       countdownEl.textContent = 'انتهت';
@@ -1657,12 +1679,58 @@ function parseDateISO(d) {
     if (parts.length === 3) {
       const y = Number(parts[0]), m = Number(parts[1]) - 1, day = Number(parts[2]);
       const dt = new Date(y, m, day);
+      // تحديد الساعة على نهاية اليوم (23:59:59) للعدّاد
       dt.setHours(23,59,59,999);
       return dt;
     }
     const dt2 = new Date(s);
     return isNaN(dt2.getTime()) ? null : dt2;
   } catch { return null; }
+}
+
+// دالة مساعدة لإنشاء تاريخ انتهاء للاختبار
+function createTestEndDate(daysFromNow = 7) {
+  const now = new Date();
+  const endDate = new Date(now.getTime() + (daysFromNow * 24 * 60 * 60 * 1000));
+  endDate.setHours(23, 59, 59, 999);
+  return endDate;
+}
+
+// دالة اختبار للعداد
+function testCountdown() {
+  const countdownEl = document.getElementById('packageStatusCountdown');
+  if (!countdownEl) {
+    console.error('Countdown element not found!');
+    return;
+  }
+  
+  const testEndDate = createTestEndDate(5); // 5 أيام من الآن
+  console.log('Testing countdown with end date:', testEndDate.toISOString());
+  startPackageStatusCountdown(testEndDate, countdownEl);
+}
+
+// دالة اختبار لإظهار شريط الباقة
+function testPackageStatusBar() {
+  const bar = document.getElementById('packageStatusBar');
+  if (!bar) {
+    console.error('Package status bar not found!');
+    return;
+  }
+  
+  // إنشاء بيانات وهمية للاختبار
+  const testPlace = {
+    id: 'test',
+    name: 'مكان تجريبي',
+    raw: {
+      'حالة الباقة': 'مفعلة',
+      'الباقة': '1',
+      'تاريخ بداية الاشتراك': new Date().toISOString().split('T')[0],
+      'تاريخ نهاية الاشتراك': createTestEndDate(7).toISOString().split('T')[0]
+    }
+  };
+  
+  console.log('Testing package status bar with:', testPlace);
+  showPackageStatusBar(testPlace);
 }
 function daysBetween(from, to) {
   if (!from || !to) return null;

@@ -285,10 +285,13 @@ async function loadLookupsAndPopulate() {
       // نجيب الباقة الحالية للمكان (لو المستخدم مسجل دخول)
       const logged = getLoggedPlace();
       const loggedPackageId = logged?.raw?.['الباقة'] || '';
+      const packageStatus = logged?.raw?.['حالة الباقة'] || '';
+      const isTrialUsed = String(logged?.raw?.['حالة الباقة التجريبية'] || '').toLowerCase() === 'true';
 
       (data.packages || []).forEach(p => {
         const div = document.createElement('div'); 
         div.className = 'pkg-card';
+        div.setAttribute('data-package-id', p.id);
 
         const h = document.createElement('h3'); 
         h.textContent = p.name;
@@ -307,14 +310,14 @@ async function loadLookupsAndPopulate() {
 
         const btn = document.createElement('button'); 
         btn.className = 'choose-pkg'; 
-        btn.textContent = 'اختر الباقة';
+        btn.setAttribute('data-price', price);
         btn.onclick = () => choosePackageAPI(p.id);
 
-        // ✅ تعديل: لو دي الباقة المفعلة حالياً
+        // تحديث مظهر البطاقة بناءً على الحالة
         if (loggedPackageId === String(p.id)) {
-          div.classList.add('active-package');
-          btn.textContent = 'مفعلة حالياً';
-          btn.disabled = true;
+          updatePackageCardAppearance(p.id, packageStatus, isTrialUsed);
+        } else {
+          updatePackageCardAppearance(p.id, '', isTrialUsed);
         }
 
         div.appendChild(h); 
@@ -363,14 +366,57 @@ function updateAreas() {
 }
 
 /* ========== Tabs ========== */
-function showTab(tabName) {
-  document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  const target = document.getElementById(tabName + '-tab');
-  if (target) target.style.display = 'block';
-  const tabEl = document.getElementById('tab-' + tabName);
-  if (tabEl) tabEl.classList.add('active');
-  currentTab = tabName;
+// دالة showTab محذوفة - موجودة في index.html
+
+/* ========== Package Card Appearance ========== */
+function updatePackageCardAppearance(packageId, status, isTrialUsed = false) {
+  const card = document.querySelector(`[data-package-id="${packageId}"]`);
+  if (!card) return;
+
+  // إزالة جميع الكلاسات السابقة
+  card.classList.remove('active', 'pending', 'expired');
+  
+  const button = card.querySelector('.choose-pkg');
+  if (!button) return;
+
+  // إزالة جميع كلاسات الأزرار السابقة
+  button.classList.remove('btn-activate', 'btn-active', 'btn-pending', 'btn-expired', 'btn-trial-used');
+
+  switch (status) {
+    case 'مفعلة':
+      card.classList.add('active');
+      button.classList.add('btn-active');
+      button.textContent = '✓ مُفعّلة حالياً';
+      button.disabled = true;
+      break;
+
+    case 'قيد الدفع':
+      card.classList.add('pending');
+      button.classList.add('btn-pending');
+      button.textContent = '⏳ قيد التحقق من الدفع';
+      button.disabled = true;
+      break;
+
+    case 'منتهية':
+      card.classList.add('expired');
+      button.classList.add('btn-expired');
+      button.textContent = '🔄 تجديد الاشتراك';
+      button.disabled = false;
+      break;
+
+    default:
+      // فحص إذا كانت باقة تجريبية مستخدمة سابقاً
+      if (isTrialUsed && button.dataset.price === '0') {
+        button.classList.add('btn-trial-used');
+        button.textContent = '❌ تم استخدامها سابقاً';
+        button.disabled = true;
+      } else {
+        button.classList.add('btn-activate');
+        button.textContent = button.dataset.price === '0' ? '🚀 تفعيل تجريبي مجاني' : '💳 اختر هذه الباقة';
+        button.disabled = false;
+      }
+      break;
+  }
 }
 
 /* ========== Previews ========== */

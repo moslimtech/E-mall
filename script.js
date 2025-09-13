@@ -1732,6 +1732,46 @@ function testPackageStatusBar() {
   console.log('Testing package status bar with:', testPlace);
   showPackageStatusBar(testPlace);
 }
+
+// دالة لإجبار تحديث البيانات من الخادم
+async function forceRefreshPlaceData() {
+  const logged = getLoggedPlace();
+  if (!logged || !logged.id) {
+    console.error('No logged place found');
+    return;
+  }
+
+  try {
+    console.log('Force refreshing place data for ID:', logged.id);
+    const fetched = await fetchPlace(logged.id);
+    if (fetched) {
+      console.log('Fetched fresh data:', fetched);
+      await setLoggedInUI(fetched);
+      showSuccess('تم تحديث البيانات من الخادم');
+    } else {
+      console.error('Failed to fetch fresh data');
+      showError('فشل في تحديث البيانات من الخادم');
+    }
+  } catch (err) {
+    console.error('Error refreshing place data:', err);
+    showError('خطأ في تحديث البيانات: ' + err.message);
+  }
+}
+
+// دالة لفحص البيانات المحفوظة محلياً
+function debugStoredData() {
+  const logged = getLoggedPlace();
+  if (!logged) {
+    console.log('No stored data found');
+    return;
+  }
+  
+  console.log('Stored place data:', logged);
+  console.log('Package status:', logged.raw?.['حالة الباقة']);
+  console.log('Package ID:', logged.raw?.['الباقة']);
+  console.log('Start date:', logged.raw?.['تاريخ بداية الاشتراك']);
+  console.log('End date:', logged.raw?.['تاريخ نهاية الاشتراك']);
+}
 function daysBetween(from, to) {
   if (!from || !to) return null;
   const d1 = new Date(from.getFullYear(), from.getMonth(), from.getDate());
@@ -2028,6 +2068,16 @@ function updateInlinePackageInfoCard(place) {
     const endRaw = raw['تاريخ نهاية الاشتراك'] || '';
     const startDate = parseDateISO(startRaw);
     const endDate = parseDateISO(endRaw);
+
+    // إضافة رسائل console لتتبع المشكلة
+    console.log('updateInlinePackageInfoCard:', {
+      pkgStatus,
+      pkgId,
+      startRaw,
+      endRaw,
+      startDate: startDate ? startDate.toISOString() : 'null',
+      endDate: endDate ? endDate.toISOString() : 'null'
+    });
 
     let packageName = '';
     try {

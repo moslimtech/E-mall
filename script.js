@@ -312,6 +312,9 @@ async function loadLookupsAndPopulate() {
         btn.className = 'choose-pkg'; 
         btn.setAttribute('data-price', price);
         btn.onclick = () => choosePackageAPI(p.id);
+        
+        // تعيين النص الافتراضي للزر
+        btn.textContent = price === 0 ? '🚀 تفعيل تجريبي مجاني' : '💳 اختر هذه الباقة';
 
         // تحديث مظهر البطاقة بناءً على الحالة
         if (loggedPackageId === String(p.id)) {
@@ -346,6 +349,13 @@ async function loadLookupsAndPopulate() {
 
     if (typeof updateAdsTabVisibility === 'function') updateAdsTabVisibility();
     updateActivateButtonState();
+    
+    // تحديث بطاقات الباقات بعد تحميل البيانات
+    setTimeout(() => {
+      if (typeof refreshAllPackageCards === 'function') {
+        refreshAllPackageCards();
+      }
+    }, 500);
   } catch (err) {
     console.error('loadLookupsAndPopulate error', err);
   }
@@ -425,6 +435,27 @@ function updatePackageCardAppearance(packageId, status, isTrialUsed = false) {
       }
       break;
   }
+}
+
+// دالة لتحديث جميع بطاقات الباقات
+function refreshAllPackageCards() {
+  const loggedPlace = getLoggedPlace ? getLoggedPlace() : null;
+  if (!loggedPlace) return;
+
+  const currentPackageId = loggedPlace.raw?.['الباقة'] || '';
+  const packageStatus = loggedPlace.raw?.['حالة الباقة'] || '';
+  const isTrialUsed = String(loggedPlace.raw?.['حالة الباقة التجريبية'] || '').toLowerCase() === 'true';
+
+  // تحديث جميع البطاقات
+  document.querySelectorAll('.pkg-card').forEach(card => {
+    const packageId = card.dataset.packageId || '';
+    
+    if (packageId === currentPackageId) {
+      updatePackageCardAppearance(packageId, packageStatus, isTrialUsed);
+    } else {
+      updatePackageCardAppearance(packageId, '', isTrialUsed);
+    }
+  });
 }
 
 /* ========== Previews ========== */

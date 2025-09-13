@@ -213,6 +213,77 @@
             box-shadow: var(--shadow);
         }
 
+        /* شريط حالة الباقة */
+        #packageStatusBar {
+            background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            box-shadow: var(--shadow);
+        }
+
+        .package-status-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .package-info {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        #packageStatusTitle {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        #packageStatusDetails {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .package-countdown-display {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 16px;
+            min-width: 150px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .package-countdown-display.countdown-ok {
+            background: rgba(16, 185, 129, 0.3);
+            border-color: rgba(16, 185, 129, 0.5);
+        }
+
+        .package-countdown-display.countdown-warn {
+            background: rgba(245, 158, 11, 0.3);
+            border-color: rgba(245, 158, 11, 0.5);
+        }
+
+        .package-countdown-display.countdown-crit {
+            background: rgba(239, 68, 68, 0.3);
+            border-color: rgba(239, 68, 68, 0.5);
+        }
+
+        @media (max-width: 768px) {
+            .package-status-content {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .package-countdown-display {
+                width: 100%;
+            }
+        }
+
         #placeStatusMessage {
             margin-bottom: 10px;
             font-weight: 600;
@@ -996,6 +1067,17 @@
                 <button class="status-btn" data-status="مغلق">مغلق</button>
                 <button class="status-btn" data-status="مغلق للصلاة">مغلق للصلاة</button>
                 <button class="status-btn" data-status="تحت التجهيز">تحت التجهيز</button>
+            </div>
+        </div>
+
+        <!-- شريط حالة الباقة -->
+        <div id="packageStatusBar" style="display: none;">
+            <div class="package-status-content">
+                <div class="package-info">
+                    <div id="packageStatusTitle"></div>
+                    <div id="packageStatusDetails"></div>
+                </div>
+                <div id="packageStatusCountdown" class="package-countdown-display"></div>
             </div>
         </div>
 

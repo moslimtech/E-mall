@@ -1079,20 +1079,12 @@
                 </div>
                 <div id="packageStatusCountdown" class="package-countdown-display"></div>
             </div>
-            <!-- أزرار اختبار (يمكن حذفها لاحقاً) -->
-            <div style="margin-top: 10px; text-align: center;">
-                <button onclick="testCountdown()" style="background: #4f46e5; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; margin: 2px;">
-                    اختبار العداد
-                </button>
-                <button onclick="testPackageStatusBar()" style="background: #10b981; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; margin: 2px;">
-                    اختبار شريط الباقة
-                </button>
-                <button onclick="forceRefreshPlaceData()" style="background: #f59e0b; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; margin: 2px;">
-                    تحديث البيانات
-                </button>
-                <button onclick="debugStoredData()" style="background: #6b7280; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; margin: 2px;">
-                    فحص البيانات
-                </button>
+            <!-- مؤشر تحميل الشبكة -->
+            <div id="packageStatusLoading" style="display: none; text-align: center; margin-top: 10px;">
+                <div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.2); padding: 8px 12px; border-radius: 6px;">
+                    <div class="spinner" style="width: 16px; height: 16px; border-width: 2px;"></div>
+                    <span style="font-size: 14px;">جاري تحديث البيانات...</span>
+                </div>
             </div>
         </div>
 
@@ -1130,10 +1122,12 @@
             <div id="packageInfoCard" style="display: none;">
                 <div id="packageInfoText"></div>
                 <div id="packageInfoCountdown"></div>
-                <div style="margin-top: 10px; text-align: center;">
-                    <button onclick="forceRefreshPlaceData()" style="background: #f59e0b; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px;">
-                        🔄 تحديث حالة الباقة
-                    </button>
+                <!-- مؤشر تحميل الباقة -->
+                <div id="packageInfoLoading" style="display: none; text-align: center; margin-top: 10px;">
+                    <div style="display: inline-flex; align-items: center; gap: 8px; background: #f0f9ff; padding: 8px 12px; border-radius: 6px; border: 1px solid #0ea5e9;">
+                        <div class="spinner" style="width: 16px; height: 16px; border-width: 2px; border-top-color: #0ea5e9;"></div>
+                        <span style="font-size: 14px; color: #0369a1;">جاري تحديث حالة الباقة...</span>
+                    </div>
                 </div>
             </div>
 

@@ -9,6 +9,10 @@ let editingAdId = null;
 const recentUploads = {};
 const THEME_KEY = 'ban_theme';
 
+// متغيرات التحديث التلقائي
+let autoRefreshInterval = null;
+const AUTO_REFRESH_INTERVAL = 30000; // 30 ثانية
+
 /* ========== Theme ========== */
 function applyTheme(theme) {
   if (theme === 'dark') {
@@ -991,6 +995,14 @@ async function setLoggedInUI(place) {
     showPackageStatusBar(place);
   } catch (e) { console.warn('could not show status bar', e); }
   updateActivateButtonState();
+
+  // تحديث تلقائي للبيانات بعد 2 ثانية من تسجيل الدخول
+  setTimeout(async () => {
+    await forceRefreshPlaceData(false); // تحديث صامت بدون رسائل
+  }, 2000);
+
+  // بدء التحديث التلقائي الدوري
+  startAutoRefresh();
 }
 
 function setLoggedOutUI() {
@@ -1003,6 +1015,9 @@ function setLoggedOutUI() {
   const placeSelects = document.querySelectorAll('select[name="placeId"]'); placeSelects.forEach(ps => { ps.disabled = false; });
   if (typeof updateAdsTabVisibility === 'function') updateAdsTabVisibility();
   updateActivateButtonState();
+  
+  // إيقاف التحديث التلقائي عند تسجيل الخروج
+  stopAutoRefresh();
 }
 
 async function tryPrefillPlaceForm(place) {
@@ -1354,11 +1369,6 @@ function showPackageStatusBar(place) {
     }
     if (details) details.textContent = detailsText;
 
-    console.log('Package status active:', { 
-      pkgStatus, 
-      endDate: endDate ? endDate.toISOString() : 'null',
-      countdown: countdown ? 'exists' : 'missing'
-    });
 
     if (endDate) {
       // التأكد من أن العداد موجود قبل بدء العدّاد
@@ -1398,7 +1408,6 @@ let packageStatusCountdownTimer = null;
 
 function startPackageStatusCountdown(endDate, countdownEl) {
   if (!countdownEl || !endDate) {
-    console.log('startPackageStatusCountdown: missing elements', { countdownEl, endDate });
     return;
   }
   
@@ -1407,13 +1416,6 @@ function startPackageStatusCountdown(endDate, countdownEl) {
   function updateCountdown() {
     const now = new Date();
     const diff = endDate.getTime() - now.getTime();
-    
-    console.log('Countdown update:', { 
-      now: now.toISOString(), 
-      endDate: endDate.toISOString(), 
-      diff: diff,
-      diffDays: Math.floor(diff / (1000 * 60 * 60 * 24))
-    });
     
     if (diff <= 0) {
       countdownEl.textContent = 'انتهت';
@@ -1734,27 +1736,69 @@ function testPackageStatusBar() {
 }
 
 // دالة لإجبار تحديث البيانات من الخادم
-async function forceRefreshPlaceData() {
+async function forceRefreshPlaceData(showLoading = true) {
   const logged = getLoggedPlace();
   if (!logged || !logged.id) {
     console.error('No logged place found');
     return;
   }
 
+  // إظهار مؤشر التحميل
+  if (showLoading) {
+    showPackageLoading(true);
+  }
+
   try {
-    console.log('Force refreshing place data for ID:', logged.id);
     const fetched = await fetchPlace(logged.id);
     if (fetched) {
-      console.log('Fetched fresh data:', fetched);
       await setLoggedInUI(fetched);
-      showSuccess('تم تحديث البيانات من الخادم');
+      if (showLoading) {
+        showSuccess('تم تحديث البيانات من الخادم');
+      }
     } else {
-      console.error('Failed to fetch fresh data');
-      showError('فشل في تحديث البيانات من الخادم');
+      if (showLoading) {
+        showError('فشل في تحديث البيانات من الخادم');
+      }
     }
   } catch (err) {
-    console.error('Error refreshing place data:', err);
-    showError('خطأ في تحديث البيانات: ' + err.message);
+    if (showLoading) {
+      showError('خطأ في تحديث البيانات: ' + err.message);
+    }
+  } finally {
+    if (showLoading) {
+      showPackageLoading(false);
+    }
+  }
+}
+
+// دالة لإظهار/إخفاء مؤشر التحميل
+function showPackageLoading(show) {
+  const loading1 = document.getElementById('packageStatusLoading');
+  const loading2 = document.getElementById('packageInfoLoading');
+  
+  if (loading1) loading1.style.display = show ? 'block' : 'none';
+  if (loading2) loading2.style.display = show ? 'block' : 'none';
+}
+
+// دالة لبدء التحديث التلقائي
+function startAutoRefresh() {
+  if (autoRefreshInterval) {
+    clearInterval(autoRefreshInterval);
+  }
+  
+  autoRefreshInterval = setInterval(async () => {
+    const logged = getLoggedPlace();
+    if (logged && logged.id) {
+      await forceRefreshPlaceData(false); // تحديث صامت
+    }
+  }, AUTO_REFRESH_INTERVAL);
+}
+
+// دالة لإيقاف التحديث التلقائي
+function stopAutoRefresh() {
+  if (autoRefreshInterval) {
+    clearInterval(autoRefreshInterval);
+    autoRefreshInterval = null;
   }
 }
 
@@ -2069,15 +2113,10 @@ function updateInlinePackageInfoCard(place) {
     const startDate = parseDateISO(startRaw);
     const endDate = parseDateISO(endRaw);
 
-    // إضافة رسائل console لتتبع المشكلة
-    console.log('updateInlinePackageInfoCard:', {
-      pkgStatus,
-      pkgId,
-      startRaw,
-      endRaw,
-      startDate: startDate ? startDate.toISOString() : 'null',
-      endDate: endDate ? endDate.toISOString() : 'null'
-    });
+    // رسائل تتبع للتصحيح (يمكن إزالتها لاحقاً)
+    if (pkgStatus === 'قيد الدفع') {
+      console.log('Package status shows "قيد الدفع" - checking for data sync...');
+    }
 
     let packageName = '';
     try {

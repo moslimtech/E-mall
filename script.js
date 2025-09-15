@@ -46,21 +46,42 @@ function initTheme() {
 }
 
 /* ========== API helpers ========== */
-async function apiFetch(url, opts = {}) {
-  try {
-    const res = await fetch(url, opts);
-    const text = await res.text();
-    let data = null;
-    try { data = JSON.parse(text); } catch (e) { data = text; }
-    return { ok: res.ok, status: res.status, data, raw: text };
-  } catch (err) {
-    return { ok: false, status: 0, error: err.message || String(err) };
+async function apiFetch(url, opts = {}, retries = 3, delay = 1000) {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const res = await fetch(url, opts);
+      const text = await res.text();
+      let data = null;
+      try { data = JSON.parse(text); } catch (e) { data = text; }
+      return { ok: res.ok, status: res.status, data, raw: text };
+    } catch (err) {
+      const isLastAttempt = attempt === retries;
+      const isNetworkError = err.message.includes('Failed to fetch') || 
+                            err.message.includes('ERR_NETWORK_CHANGED') ||
+                            err.message.includes('NetworkError');
+      
+      console.warn(`API fetch attempt ${attempt}/${retries} failed:`, err.message);
+      
+      if (isLastAttempt) {
+        return { ok: false, status: 0, error: err.message || String(err) };
+      }
+      
+      // فقط أعد المحاولة للأخطاء الشبكية
+      if (isNetworkError) {
+        const backoffDelay = delay * Math.pow(2, attempt - 1);
+        console.log(`Retrying in ${backoffDelay}ms...`);
+        await new Promise(resolve => setTimeout(resolve, backoffDelay));
+      } else {
+        // للأخطاء الأخرى، لا تعيد المحاولة
+        return { ok: false, status: 0, error: err.message || String(err) };
+      }
+    }
   }
 }
-async function apiPost(payload) {
+async function apiPost(payload, retries = 3) {
   try {
     if (payload instanceof FormData) {
-      return await apiFetch(API_URL, { method: 'POST', body: payload });
+      return await apiFetch(API_URL, { method: 'POST', body: payload }, retries);
     }
     if (typeof payload === 'object' && payload !== null) {
       const form = new FormData();
@@ -69,9 +90,9 @@ async function apiPost(payload) {
         if (v !== null && typeof v === 'object') form.append(k, JSON.stringify(v));
         else form.append(k, v === undefined ? '' : v);
       }
-      return await apiFetch(API_URL, { method: 'POST', body: form });
+      return await apiFetch(API_URL, { method: 'POST', body: form }, retries);
     }
-    return await apiFetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: String(payload) });
+    return await apiFetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: String(payload) }, retries);
   } catch (err) {
     return { ok: false, status: 0, error: err.message || String(err) };
   }
@@ -104,6 +125,17 @@ document.addEventListener('DOMContentLoaded', () => {
   initPlaceStatusButtons();
 
   updateActivateButtonState();
+  
+  // إصلاح وضوح العدادات بعد تحميل الصفحة
+  setTimeout(() => {
+    if (typeof fixCountdownVisibility === 'function') {
+      fixCountdownVisibility();
+    }
+    // إجبار إظهار العدادات
+    if (typeof forceShowCountdowns === 'function') {
+      forceShowCountdowns();
+    }
+  }, 2000);
 });
 
 function initializeApp() {
@@ -130,99 +162,6 @@ function setupEventListeners() {
   const pkgSelect = document.querySelector('select[name="package"]');
   if (pkgSelect) pkgSelect.addEventListener('change', updateActivateButtonState);
 }
-
-/* ========== Lookups & populate ========== */
-// async function loadLookupsAndPopulate() {
-//   try {
-//     const resp = await apiFetch(`${API_URL}?action=getLookups`);
-//     if (!resp.ok) { console.warn('getLookups failed', resp); return; }
-//     const json = resp.data;
-//     const data = (json && json.success && json.data) ? json.data : json;
-//     if (!data) return;
-
-//     window.lastLookups = data; // حفظ آخر القوائم
-
-//     const actSelect = document.querySelector('select[name="activityType"]');
-//     if (actSelect) {
-//       actSelect.innerHTML = '<option value="">اختر نوع النشاط</option>';
-//       (data.activities || []).forEach(a => {
-//         const opt = document.createElement('option'); opt.value = a.id; opt.textContent = a.name; actSelect.appendChild(opt);
-//       });
-//     }
-
-//     const citySelect = document.querySelector('select[name="city"]');
-//     if (citySelect) {
-//       citySelect.innerHTML = '<option value="">اختر المدينة</option>';
-//       (data.cities || []).forEach(c => {
-//         const opt = document.createElement('option'); opt.value = c.id; opt.textContent = c.name; citySelect.appendChild(opt);
-//       });
-//     }
-
-//     const cityAreaMap = {};
-//     (data.areas || []).forEach(a => {
-//       const cid = a.raw && (a.raw['ID المدينة'] || a.raw['cityId']) ? String(a.raw['ID المدينة'] || a.raw['cityId']) : '';
-//       if (!cityAreaMap[cid]) cityAreaMap[cid] = [];
-//       cityAreaMap[cid].push({ id: a.id, name: a.name });
-//     });
-//     window.cityAreaMap = cityAreaMap;
-
-//     const siteSelects = document.querySelectorAll('select[name="location"]');
-//     siteSelects.forEach(s => {
-//       s.innerHTML = '<option value="">اختر الموقع</option>';
-//       (data.sites || []).forEach(site => {
-//         const opt = document.createElement('option'); opt.value = site.id; opt.textContent = site.name; s.appendChild(opt);
-//       });
-//     });
-
-//     const pkgSelect = document.querySelector('select[name="package"]');
-//     if (pkgSelect) {
-//       pkgSelect.innerHTML = '<option value="">اختر الباقة</option>';
-//       (data.packages || []).forEach(p => {
-//         const opt = document.createElement('option');
-//         opt.value = p.id;
-//         const dur = Number(p.duration || (p.raw && (p.raw['مدة الباقة باليوم'] || p.raw['مدة'])) || 0) || 0;
-//         const price = Number(p.price || (p.raw && (p.raw['سعر الباقة'] || p.raw['السعر'])) || 0) || 0;
-//         const allowed = Number(p.allowedAds || (p.raw && (p.raw['عدد الاعلانات'] || p.raw['عدد_الاعلانات'])) || 0) || 0;
-//         opt.textContent = `${p.name} — المدة: ${dur} يوم · السعر: ${price} · الإعلانات: ${allowed}`;
-//         opt.dataset.duration = String(dur);
-//         opt.dataset.price = String(price);
-//         opt.dataset.allowed = String(allowed);
-//         pkgSelect.appendChild(opt);
-//       });
-//     }
-
-//     const pkgGrid = document.getElementById('packagesGrid');
-//     if (pkgGrid) {
-//       pkgGrid.innerHTML = '';
-//       (data.packages || []).forEach(p => {
-//         const div = document.createElement('div'); div.className = 'pkg-card';
-//         const h = document.createElement('h3'); h.textContent = p.name;
-//         const dur = Number(p.duration || (p.raw && (p.raw['مدة الباقة باليوم'] || p.raw['مدة'])) || 0) || 0;
-//         const price = Number(p.price || (p.raw && (p.raw['سعر الباقة'] || p.raw['السعر'])) || 0) || 0;
-//         const allowed = Number(p.allowedAds || (p.raw && (p.raw['عدد الاعلانات'] || p.raw['عدد_الاعلانات'])) || 0) || 0;
-//         const d = document.createElement('p'); d.textContent = `المدة: ${dur} يوم · السعر: ${price} · الإعلانات: ${allowed}`;
-//         const desc = document.createElement('p'); desc.textContent = p.raw && (p.raw['وصف الباقة'] || p.raw['description']) ? (p.raw['وصف الباقة'] || p.raw['description']) : '';
-//         const btn = document.createElement('button'); btn.className = 'choose-pkg'; btn.textContent = 'اختر الباقة';
-//         btn.onclick = () => choosePackageAPI(p.id);
-//         div.appendChild(h); div.appendChild(d); if (desc.textContent) div.appendChild(desc); div.appendChild(btn);
-//         pkgGrid.appendChild(div);
-//       });
-//     }
-
-//     window.availablePaymentMethods = (data.payments || data.paymentsMethods || []).map(pm => ({ id: pm.id || pm.raw && pm.raw['معرف الدفع'], name: pm.name || pm.raw && (pm.raw['طرق الدفع'] || pm.raw['طريقة الدفع']), raw: pm.raw || pm }));
-//     const stored = getLoggedPlace();
-//     if (stored && stored.raw) {
-//       await tryPrefillPlaceForm(stored);
-//       if (stored.id) { if (typeof checkAdQuotaAndToggle === 'function') checkAdQuotaAndToggle(stored.id); if (typeof loadAdsForPlace === 'function') loadAdsForPlace(stored.id); }
-//     }
-
-//     if (typeof updateAdsTabVisibility === 'function') updateAdsTabVisibility();
-//     updateActivateButtonState();
-//   } catch (err) {
-//     console.error('loadLookupsAndPopulate error', err);
-//   }
-// }
-
 
 /* ========== Lookups & populate ========== */
 async function loadLookupsAndPopulate() {
@@ -978,7 +917,7 @@ function getLoggedPlace() { try { const raw = localStorage.getItem('khedmatak_pl
 function setLoggedPlace(obj) { try { localStorage.setItem('khedmatak_place', JSON.stringify(obj)); } catch (e) {} }
 function clearLoggedPlace() { localStorage.removeItem('khedmatak_place'); }
 
-async function setLoggedInUI(place) {
+async function setLoggedInUI(place, skipRefresh = false) {
   const loginBtn = document.getElementById('loginBtn'); const logoutBtn = document.getElementById('logoutBtn'); const loggedInUser = document.getElementById('loggedInUser');
   if (loginBtn) loginBtn.style.display = 'none'; if (logoutBtn) logoutBtn.style.display = 'inline-block'; if (loggedInUser) { loggedInUser.style.display = 'inline-block'; loggedInUser.textContent = (place && place.name) ? place.name : 'صاحب المحل'; }
   const loginModal = document.getElementById('loginModal'); if (loginModal) loginModal.style.display = 'none';
@@ -996,13 +935,15 @@ async function setLoggedInUI(place) {
   } catch (e) { console.warn('could not show status bar', e); }
   updateActivateButtonState();
 
-  // تحديث تلقائي للبيانات بعد 2 ثانية من تسجيل الدخول
-  setTimeout(async () => {
-    await forceRefreshPlaceData(false); // تحديث صامت بدون رسائل
-  }, 2000);
+  // تحديث تلقائي للبيانات بعد 2 ثانية من تسجيل الدخول (فقط عند تسجيل الدخول الأولي)
+  if (!skipRefresh) {
+    setTimeout(async () => {
+      await forceRefreshPlaceData(false); // تحديث صامت بدون رسائل
+    }, 2000);
 
-  // بدء التحديث التلقائي الدوري
-  startAutoRefresh();
+    // بدء التحديث التلقائي الدوري
+    startAutoRefresh();
+  }
 }
 
 function setLoggedOutUI() {
@@ -1362,7 +1303,7 @@ function showPackageStatusBar(place) {
     if (title) title.textContent = `📦 ${pn}`;
     
     let detailsText = 'حالة الباقة: مفعلة';
-    if (startDate && endDate) {
+    if (startDate && endDate && !isNaN(startDate.getTime()) && !isNaN(endDate.getTime())) {
       const sTxt = startDate.toISOString().split('T')[0];
       const eTxt = endDate.toISOString().split('T')[0];
       detailsText += ` • البداية: ${sTxt} • النهاية: ${eTxt}`;
@@ -1374,12 +1315,21 @@ function showPackageStatusBar(place) {
       // التأكد من أن العداد موجود قبل بدء العدّاد
       if (countdown) {
         countdown.textContent = 'جاري التحميل...';
+        countdown.style.display = 'block';
+        countdown.style.visibility = 'visible';
+        countdown.style.opacity = '1';
+        console.log('بدء العدّاد مع تاريخ الانتهاء:', endDate.toISOString());
         startPackageStatusCountdown(endDate, countdown);
       } else {
         console.error('Countdown element not found!');
       }
     } else {
-      if (countdown) countdown.textContent = 'لا يوجد تاريخ انتهاء';
+      if (countdown) {
+        countdown.textContent = 'لا يوجد تاريخ انتهاء';
+        countdown.style.display = 'block';
+        countdown.style.visibility = 'visible';
+        countdown.style.opacity = '1';
+      }
     }
   } else if (pkgStatus === 'قيد الدفع') {
     const pn = packageName || (pkgId ? `الباقة ${pkgId}` : 'باقة غير معروفة');
@@ -1408,40 +1358,78 @@ let packageStatusCountdownTimer = null;
 
 function startPackageStatusCountdown(endDate, countdownEl) {
   if (!countdownEl || !endDate) {
+    console.error('startPackageStatusCountdown: Missing countdownEl or endDate');
     return;
   }
   
   clearInterval(packageStatusCountdownTimer);
+  
+  let lastUpdate = 0;
+  let lastText = '';
+  let lastClass = '';
   
   function updateCountdown() {
     const now = new Date();
     const diff = endDate.getTime() - now.getTime();
     
     if (diff <= 0) {
-      countdownEl.textContent = 'انتهت';
-      countdownEl.className = 'package-countdown-display countdown-crit';
+      if (lastText !== 'انتهت' || lastClass !== 'package-countdown-display countdown-crit') {
+        countdownEl.textContent = 'انتهت';
+        countdownEl.className = 'package-countdown-display countdown-crit';
+        lastText = 'انتهت';
+        lastClass = 'package-countdown-display countdown-crit';
+      }
       clearInterval(packageStatusCountdownTimer);
       return;
     }
     
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
     const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
     
-    countdownEl.textContent = `متبقي ${days} يوم و${hours} ساعة`;
+    // عرض العدّاد بتنسيق أفضل
+    let countdownText = '';
+    if (days > 0) {
+      countdownText = `متبقي ${days} يوم`;
+      if (hours > 0) {
+        countdownText += ` و${hours} ساعة`;
+      }
+    } else if (hours > 0) {
+      countdownText = `متبقي ${hours} ساعة`;
+      if (minutes > 0) {
+        countdownText += ` و${minutes} دقيقة`;
+      }
+    } else {
+      countdownText = `متبقي ${minutes} دقيقة`;
+    }
     
     // تحديث الألوان حسب الوقت المتبقي
-    countdownEl.className = 'package-countdown-display';
+    let newClass = 'package-countdown-display';
     if (days <= 2) {
-      countdownEl.classList.add('countdown-crit');
+      newClass += ' countdown-crit';
     } else if (days <= 7) {
-      countdownEl.classList.add('countdown-warn');
+      newClass += ' countdown-warn';
     } else {
-      countdownEl.classList.add('countdown-ok');
+      newClass += ' countdown-ok';
+    }
+    
+    // تحديث DOM فقط عند تغيير النص أو الكلاس
+    if (lastText !== countdownText) {
+      countdownEl.textContent = countdownText;
+      lastText = countdownText;
+    }
+    
+    if (lastClass !== newClass) {
+      countdownEl.className = newClass;
+      lastClass = newClass;
     }
   }
   
   updateCountdown();
-  packageStatusCountdownTimer = setInterval(updateCountdown, 60 * 1000); // تحديث كل دقيقة
+  
+  // تحديث كل دقيقة، أو كل 30 ثانية إذا كان الوقت المتبقي أقل من ساعة
+  const updateInterval = (endDate.getTime() - Date.now()) < 60 * 60 * 1000 ? 30 * 1000 : 60 * 1000;
+  packageStatusCountdownTimer = setInterval(updateCountdown, updateInterval);
 }
 
 function showPlaceStatusBar(place) {
@@ -1587,7 +1575,7 @@ async function handlePositionAndFill(lat, lng) {
       try { mapEl.dispatchEvent(new Event('input', { bubbles: true })); } catch(e){}
       try { mapEl.dispatchEvent(new Event('change', { bubbles: true })); } catch(e){}
     }
-    const msgEl = document.getElementById('placeStatusMessage'); if (msgEl) msg.textContent = `الإحداثيات: ${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+    const msgEl = document.getElementById('placeStatusMessage'); if (msgEl) msgEl.textContent = `الإحداثيات: ${lat.toFixed(6)}, ${lng.toFixed(6)}`;
     const geo = await reverseGeocodeNominatim(lat, lng);
     if (!geo) return;
     const detailed = geo.display_name || '';
@@ -1661,10 +1649,30 @@ function startPackageCountdown(endDate) {
     }
     const dayMs = 1000*60*60*24;
     const hourMs = 1000*60*60;
+    const minuteMs = 1000*60;
     const days = Math.floor(diff / dayMs);
     diff -= days * dayMs;
     const hours = Math.floor(diff / hourMs);
-    el.textContent = `العدّاد: ${days} يوم و${hours} ساعة`;
+    diff -= hours * hourMs;
+    const minutes = Math.floor(diff / minuteMs);
+    
+    // عرض العدّاد بتنسيق أفضل
+    let countdownText = '';
+    if (days > 0) {
+      countdownText = `العدّاد: ${days} يوم`;
+      if (hours > 0) {
+        countdownText += ` و${hours} ساعة`;
+      }
+    } else if (hours > 0) {
+      countdownText = `العدّاد: ${hours} ساعة`;
+      if (minutes > 0) {
+        countdownText += ` و${minutes} دقيقة`;
+      }
+    } else {
+      countdownText = `العدّاد: ${minutes} دقيقة`;
+    }
+    
+    el.textContent = countdownText;
   }
   tick();
   packageCountdownTimer = setInterval(tick, 60 * 1000);
@@ -1674,20 +1682,78 @@ function startPackageCountdown(endDate) {
 function parseDateISO(d) {
   if (!d) return null;
   try {
-    if (d instanceof Date) return d;
+    if (d instanceof Date) {
+      return isNaN(d.getTime()) ? null : d;
+    }
     const s = String(d).trim();
     if (!s) return null;
+    
+    // محاولة تحليل تنسيق YYYY-MM-DD
     const parts = s.split('-');
     if (parts.length === 3) {
       const y = Number(parts[0]), m = Number(parts[1]) - 1, day = Number(parts[2]);
+      if (isNaN(y) || isNaN(m) || isNaN(day)) return null;
       const dt = new Date(y, m, day);
+      if (isNaN(dt.getTime())) return null;
       // تحديد الساعة على نهاية اليوم (23:59:59) للعدّاد
       dt.setHours(23,59,59,999);
       return dt;
     }
+    
+    // محاولة تحليل تنسيقات أخرى
     const dt2 = new Date(s);
-    return isNaN(dt2.getTime()) ? null : dt2;
-  } catch { return null; }
+    if (isNaN(dt2.getTime())) return null;
+    return dt2;
+  } catch (e) {
+    console.warn('parseDateISO error:', e, 'for input:', d);
+    return null;
+  }
+}
+
+// دالة محسنة لتحليل التواريخ من الشيت
+function parseSheetDate(dateStr) {
+  if (!dateStr) return null;
+  try {
+    const s = String(dateStr).trim();
+    if (!s) return null;
+    
+    console.log('parseSheetDate input:', s);
+    
+    // تنسيق YYYY-MM-DD
+    if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
+      console.log('matched YYYY-MM-DD format');
+      const parts = s.split('-');
+      const y = Number(parts[0]), m = Number(parts[1]) - 1, day = Number(parts[2]);
+      if (isNaN(y) || isNaN(m) || isNaN(day)) return null;
+      const dt = new Date(y, m, day);
+      if (isNaN(dt.getTime())) return null;
+      // تحديد الساعة على نهاية اليوم (23:59:59) للعدّاد
+      dt.setHours(23,59,59,999);
+      console.log('parsed YYYY-MM-DD:', dt.toISOString());
+      return dt;
+    }
+    
+    // تنسيق ISO مع الوقت (مثل: 2025-12-11T22:00:00.000Z)
+    if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(s)) {
+      console.log('matched ISO format');
+      const dt = new Date(s);
+      if (isNaN(dt.getTime())) return null;
+      // تحديد الساعة على نهاية اليوم (23:59:59) للعدّاد
+      dt.setHours(23,59,59,999);
+      console.log('parsed ISO:', dt.toISOString());
+      return dt;
+    }
+    
+    // تنسيقات أخرى
+    console.log('trying generic Date parsing');
+    const dt = new Date(s);
+    if (isNaN(dt.getTime())) return null;
+    console.log('parsed generic:', dt.toISOString());
+    return dt;
+  } catch (e) {
+    console.warn('parseSheetDate error:', e, 'for input:', dateStr);
+    return null;
+  }
 }
 
 // دالة مساعدة لإنشاء تاريخ انتهاء للاختبار
@@ -1696,6 +1762,123 @@ function createTestEndDate(daysFromNow = 7) {
   const endDate = new Date(now.getTime() + (daysFromNow * 24 * 60 * 60 * 1000));
   endDate.setHours(23, 59, 59, 999);
   return endDate;
+}
+
+// دالة لاختبار تحليل التواريخ
+function testDateParsing() {
+  console.log('=== اختبار تحليل التواريخ ===');
+  
+  const testDates = [
+    '2025-09-13',
+    '2025-12-12',
+    '2025-01-01',
+    '2025-12-31',
+    '2025-12-11T22:00:00.000Z',
+    '2025-12-11T22:00:00.000Z',
+    'invalid-date',
+    '',
+    null,
+    undefined
+  ];
+  
+  testDates.forEach(dateStr => {
+    console.log(`اختبار: "${dateStr}"`);
+    const parsed = parseSheetDate(dateStr);
+    if (parsed) {
+      console.log(`  ✓ محلل: ${parsed.toISOString()}`);
+    } else {
+      console.log(`  ✗ فشل التحليل`);
+    }
+  });
+}
+
+// دالة لاختبار العدادات مع التواريخ الصحيحة
+function testCountdownWithRealDates() {
+  console.log('=== اختبار العدادات مع التواريخ الصحيحة ===');
+  
+  // اختبار مع التواريخ التي ذكرتها
+  const startDate = parseSheetDate('2025-09-13');
+  const endDate = parseSheetDate('2025-12-12');
+  
+  if (startDate && endDate) {
+    console.log('✓ تم تحليل التواريخ بنجاح');
+    console.log('تاريخ البداية:', startDate.toISOString());
+    console.log('تاريخ النهاية:', endDate.toISOString());
+    
+    const now = new Date();
+    const diff = endDate.getTime() - now.getTime();
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    
+    console.log(`الوقت المتبقي: ${days} يوم و ${hours} ساعة و ${minutes} دقيقة`);
+    
+    // اختبار العداد
+    const countdownEl = document.getElementById('packageStatusCountdown');
+    if (countdownEl) {
+      console.log('✓ بدء العدّاد...');
+      startPackageStatusCountdown(endDate, countdownEl);
+    } else {
+      console.log('✗ العداد غير موجود');
+    }
+  } else {
+    console.log('✗ فشل تحليل التواريخ');
+  }
+}
+
+// دالة لاختبار التواريخ الجديدة
+function testNewDateFormats() {
+  console.log('=== اختبار التواريخ الجديدة ===');
+  
+  const testDates = [
+    '2025-12-11T22:00:00.000Z',
+    '2025-12-11T22:00:00.000Z',
+    '2025-09-13T00:00:00.000Z',
+    '2025-12-12T23:59:59.999Z'
+  ];
+  
+  testDates.forEach(dateStr => {
+    console.log(`اختبار: "${dateStr}"`);
+    const parsed = parseSheetDate(dateStr);
+    if (parsed) {
+      console.log(`  ✓ محلل: ${parsed.toISOString()}`);
+      const now = new Date();
+      const diff = parsed.getTime() - now.getTime();
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      console.log(`  الوقت المتبقي: ${days} يوم`);
+    } else {
+      console.log(`  ✗ فشل التحليل`);
+    }
+  });
+}
+
+// دالة لاختبار التواريخ مباشرة
+function testSpecificDate() {
+  console.log('=== اختبار التاريخ المحدد ===');
+  const testDate = '2025-12-11T22:00:00.000Z';
+  console.log('اختبار التاريخ:', testDate);
+  
+  const parsed = parseSheetDate(testDate);
+  if (parsed) {
+    console.log('✓ تم تحليل التاريخ بنجاح:', parsed.toISOString());
+    const now = new Date();
+    const diff = parsed.getTime() - now.getTime();
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    console.log(`الوقت المتبقي: ${days} يوم و ${hours} ساعة و ${minutes} دقيقة`);
+    
+    // اختبار العداد
+    const countdownEl = document.getElementById('packageStatusCountdown');
+    if (countdownEl) {
+      console.log('✓ بدء العدّاد...');
+      startPackageStatusCountdown(parsed, countdownEl);
+    } else {
+      console.log('✗ العداد غير موجود');
+    }
+  } else {
+    console.log('✗ فشل تحليل التاريخ');
+  }
 }
 
 // دالة اختبار للعداد
@@ -1709,6 +1892,266 @@ function testCountdown() {
   const testEndDate = createTestEndDate(5); // 5 أيام من الآن
   console.log('Testing countdown with end date:', testEndDate.toISOString());
   startPackageStatusCountdown(testEndDate, countdownEl);
+}
+
+// دالة اختبار سريعة للعدادات
+function quickTestCountdown() {
+  console.log('=== اختبار سريع للعدادات ===');
+  
+  // اختبار العداد الرئيسي
+  const mainCountdown = document.getElementById('packageStatusCountdown');
+  if (mainCountdown) {
+    console.log('✓ العداد الرئيسي موجود');
+    const testDate = new Date();
+    testDate.setMinutes(testDate.getMinutes() + 30); // 30 دقيقة من الآن
+    startPackageStatusCountdown(testDate, mainCountdown);
+  } else {
+    console.error('✗ العداد الرئيسي غير موجود');
+  }
+  
+  // اختبار عداد النموذج
+  const formCountdown = document.getElementById('packageInfoCountdown');
+  if (formCountdown) {
+    console.log('✓ عداد النموذج موجود');
+  } else {
+    console.error('✗ عداد النموذج غير موجود');
+  }
+  
+  // اختبار عداد البطاقة
+  const cardCountdown = document.getElementById('currentPackageCountdown');
+  if (cardCountdown) {
+    console.log('✓ عداد البطاقة موجود');
+  } else {
+    console.error('✗ عداد البطاقة غير موجود');
+  }
+}
+
+// دالة لإصلاح وضوح العدادات
+function fixCountdownVisibility() {
+  console.log('=== إصلاح وضوح العدادات ===');
+  
+  const countdownElements = [
+    'packageStatusCountdown',
+    'packageInfoCountdown', 
+    'currentPackageCountdown',
+    'packageCountdown'
+  ];
+  
+  countdownElements.forEach(id => {
+    const element = document.getElementById(id);
+    if (element) {
+      // إزالة أي تأثيرات قد تخفي العداد
+      element.style.opacity = '1';
+      element.style.visibility = 'visible';
+      element.style.display = 'block';
+      element.style.zIndex = '100';
+      element.style.position = 'relative';
+      element.style.background = 'rgba(255, 255, 255, 0.95)';
+      element.style.color = '#1f2937';
+      element.style.textShadow = 'none';
+      element.style.filter = 'none';
+      
+      console.log(`✓ تم إصلاح وضوح العداد: ${id}`);
+    } else {
+      console.log(`✗ العداد غير موجود: ${id}`);
+    }
+  });
+  
+  // إصلاح جميع عناصر العدادات
+  const allCountdowns = document.querySelectorAll('.package-countdown-display, .package-countdown');
+  allCountdowns.forEach(element => {
+    element.style.opacity = '1';
+    element.style.visibility = 'visible';
+    element.style.display = 'block';
+    element.style.zIndex = '100';
+    element.style.position = 'relative';
+    element.style.background = 'rgba(255, 255, 255, 0.95)';
+    element.style.color = '#1f2937';
+    element.style.textShadow = 'none';
+    element.style.filter = 'none';
+  });
+  
+  console.log(`✓ تم إصلاح ${allCountdowns.length} عداد إضافي`);
+}
+
+// دالة تشخيص شاملة للعدادات
+function debugCountdowns() {
+  console.log('=== تشخيص شامل للعدادات ===');
+  
+  // 1. فحص العناصر
+  const countdownElements = [
+    'packageStatusCountdown',
+    'packageInfoCountdown', 
+    'currentPackageCountdown',
+    'packageCountdown'
+  ];
+  
+  countdownElements.forEach(id => {
+    const element = document.getElementById(id);
+    if (element) {
+      console.log(`✓ العداد موجود: ${id}`);
+      console.log(`  - النص الحالي: "${element.textContent}"`);
+      console.log(`  - العرض: ${element.style.display || 'default'}`);
+      console.log(`  - الشفافية: ${element.style.opacity || 'default'}`);
+    } else {
+      console.log(`✗ العداد غير موجود: ${id}`);
+    }
+  });
+  
+  // 2. فحص بيانات الباقة
+  const logged = getLoggedPlace();
+  if (logged && logged.raw) {
+    console.log('=== بيانات الباقة ===');
+    console.log('حالة الباقة:', logged.raw['حالة الباقة']);
+    console.log('الباقة:', logged.raw['الباقة']);
+    console.log('تاريخ بداية الاشتراك:', logged.raw['تاريخ بداية الاشتراك']);
+    console.log('تاريخ نهاية الاشتراك:', logged.raw['تاريخ نهاية الاشتراك']);
+    
+    // اختبار تحليل التواريخ
+    const startDateRaw = logged.raw['تاريخ بداية الاشتراك'];
+    const endDateRaw = logged.raw['تاريخ نهاية الاشتراك'];
+    
+    console.log('=== اختبار تحليل التواريخ ===');
+    console.log('تاريخ البداية الخام:', startDateRaw);
+    console.log('تاريخ النهاية الخام:', endDateRaw);
+    
+    const startDate = parseSheetDate(startDateRaw);
+    const endDate = parseSheetDate(endDateRaw);
+    
+    console.log('=== تفاصيل التحليل ===');
+    console.log('startDateRaw:', startDateRaw, '-> parsed:', startDate);
+    console.log('endDateRaw:', endDateRaw, '-> parsed:', endDate);
+    
+    if (startDate) {
+      console.log('✓ تاريخ البداية محلل:', startDate.toISOString());
+    } else {
+      console.log('✗ لا يمكن تحليل تاريخ البداية');
+    }
+    
+    if (endDate) {
+      console.log('✓ تاريخ النهاية محلل:', endDate.toISOString());
+      const now = new Date();
+      const diff = endDate.getTime() - now.getTime();
+      console.log('الوقت المتبقي (ملي ثانية):', diff);
+      console.log('الوقت المتبقي (أيام):', Math.floor(diff / (1000 * 60 * 60 * 24)));
+    } else {
+      console.log('✗ لا يمكن تحليل تاريخ النهاية');
+    }
+  } else {
+    console.log('✗ لا توجد بيانات مكان مسجل');
+  }
+  
+  // 3. اختبار عداد تجريبي
+  const mainCountdown = document.getElementById('packageStatusCountdown');
+  if (mainCountdown) {
+    console.log('=== اختبار عداد تجريبي ===');
+    const testDate = new Date();
+    testDate.setMinutes(testDate.getMinutes() + 30); // 30 دقيقة من الآن
+    console.log('تاريخ الاختبار:', testDate.toISOString());
+    startPackageStatusCountdown(testDate, mainCountdown);
+  }
+}
+
+// دالة لإجبار إظهار العدادات
+function forceShowCountdowns() {
+  console.log('=== إجبار إظهار العدادات ===');
+  
+  const logged = getLoggedPlace();
+  if (!logged || !logged.raw) {
+    console.log('✗ لا توجد بيانات مكان مسجل');
+    return;
+  }
+  
+  const pkgStatus = String(logged.raw['حالة الباقة'] || '').trim();
+  const endDateRaw = logged.raw['تاريخ نهاية الاشتراك'] || '';
+  
+  console.log('حالة الباقة:', pkgStatus);
+  console.log('تاريخ نهاية الاشتراك:', endDateRaw);
+  
+  if (pkgStatus === 'مفعلة' && endDateRaw) {
+    const endDate = parseDateISO(endDateRaw);
+    if (endDate) {
+      console.log('تاريخ الانتهاء المحلل:', endDate.toISOString());
+      
+      // إجبار إظهار العداد الرئيسي
+      const mainCountdown = document.getElementById('packageStatusCountdown');
+      if (mainCountdown) {
+        mainCountdown.style.display = 'block';
+        mainCountdown.style.visibility = 'visible';
+        mainCountdown.style.opacity = '1';
+        mainCountdown.style.background = 'rgba(255, 255, 255, 0.95)';
+        mainCountdown.style.color = '#1f2937';
+        mainCountdown.style.padding = '10px 15px';
+        mainCountdown.style.borderRadius = '6px';
+        mainCountdown.style.fontWeight = '600';
+        mainCountdown.style.fontSize = '16px';
+        mainCountdown.style.textAlign = 'center';
+        mainCountdown.style.border = '1px solid rgba(0, 0, 0, 0.1)';
+        mainCountdown.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.1)';
+        mainCountdown.style.zIndex = '100';
+        mainCountdown.style.position = 'relative';
+        
+        console.log('بدء العدّاد الرئيسي...');
+        startPackageStatusCountdown(endDate, mainCountdown);
+      } else {
+        console.error('✗ العداد الرئيسي غير موجود');
+      }
+      
+      // إجبار إظهار عداد النموذج
+      const formCountdown = document.getElementById('packageInfoCountdown');
+      if (formCountdown) {
+        formCountdown.style.display = 'block';
+        formCountdown.style.visibility = 'visible';
+        formCountdown.style.opacity = '1';
+        formCountdown.style.background = 'rgba(255, 255, 255, 0.95)';
+        formCountdown.style.color = '#1f2937';
+        formCountdown.style.padding = '8px 12px';
+        formCountdown.style.borderRadius = '6px';
+        formCountdown.style.fontWeight = '600';
+        formCountdown.style.fontSize = '14px';
+        formCountdown.style.border = '1px solid rgba(0, 0, 0, 0.1)';
+        formCountdown.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.1)';
+        formCountdown.style.zIndex = '100';
+        formCountdown.style.position = 'relative';
+        
+        console.log('بدء عداد النموذج...');
+        const update = () => {
+          const dh = diffDaysHours(new Date(), endDate);
+          const days = dh.days ?? 0;
+          const hours = dh.hours ?? 0;
+          const minutes = Math.floor((dh.ms % (1000 * 60 * 60)) / (1000 * 60));
+          
+          let countdownText = '';
+          if (days > 0) {
+            countdownText = `العدّاد: ${days} يوم`;
+            if (hours > 0) {
+              countdownText += ` و${hours} ساعة`;
+            }
+          } else if (hours > 0) {
+            countdownText = `العدّاد: ${hours} ساعة`;
+            if (minutes > 0) {
+              countdownText += ` و${minutes} دقيقة`;
+            }
+          } else {
+            countdownText = `العدّاد: ${minutes} دقيقة`;
+          }
+          
+          formCountdown.textContent = countdownText;
+          formCountdown.classList.remove('countdown-ok','countdown-warn','countdown-crit');
+          if (dh.ms <= 48*60*60*1000) formCountdown.classList.add('countdown-crit');
+          else if (dh.ms <= 7*24*60*60*1000) formCountdown.classList.add('countdown-warn');
+          else formCountdown.classList.add('countdown-ok');
+        };
+        update();
+        clearInterval(formCountdown._timer);
+        formCountdown._timer = setInterval(update, 60 * 1000);
+      }
+    } else {
+      console.log('✗ لا يمكن تحليل تاريخ الانتهاء');
+    }
+  } else {
+    console.log('✗ الباقة غير مفعلة أو لا يوجد تاريخ انتهاء');
+  }
 }
 
 // دالة اختبار لإظهار شريط الباقة
@@ -1751,19 +2194,27 @@ async function forceRefreshPlaceData(showLoading = true) {
   try {
     const fetched = await fetchPlace(logged.id);
     if (fetched) {
-      await setLoggedInUI(fetched);
+      // استخدام skipRefresh=true لمنع الحلقة اللانهائية
+      await setLoggedInUI(fetched, true);
+      consecutiveFailures = 0; // إعادة تعيين عداد الأخطاء عند النجاح
+      lastSuccessfulRefresh = Date.now();
       if (showLoading) {
         showSuccess('تم تحديث البيانات من الخادم');
       }
     } else {
+      consecutiveFailures++;
       if (showLoading) {
         showError('فشل في تحديث البيانات من الخادم');
       }
+      throw new Error('Failed to fetch place data');
     }
   } catch (err) {
+    consecutiveFailures++;
+    console.error('Error refreshing place data:', err);
     if (showLoading) {
       showError('خطأ في تحديث البيانات: ' + err.message);
     }
+    throw err; // إعادة رمي الخطأ للتعامل معه في startAutoRefresh
   } finally {
     if (showLoading) {
       showPackageLoading(false);
@@ -1780,6 +2231,12 @@ function showPackageLoading(show) {
   if (loading2) loading2.style.display = show ? 'block' : 'none';
 }
 
+// متغيرات لإدارة حالة الشبكة
+let consecutiveFailures = 0;
+let lastSuccessfulRefresh = Date.now();
+const MAX_CONSECUTIVE_FAILURES = 5;
+const MIN_REFRESH_INTERVAL = 30000; // 30 ثانية كحد أدنى
+
 // دالة لبدء التحديث التلقائي
 function startAutoRefresh() {
   if (autoRefreshInterval) {
@@ -1788,8 +2245,26 @@ function startAutoRefresh() {
   
   autoRefreshInterval = setInterval(async () => {
     const logged = getLoggedPlace();
-    if (logged && logged.id) {
+    if (!logged || !logged.id) return;
+    
+    // تحقق من عدد المحاولات الفاشلة المتتالية
+    if (consecutiveFailures >= MAX_CONSECUTIVE_FAILURES) {
+      const timeSinceLastSuccess = Date.now() - lastSuccessfulRefresh;
+      if (timeSinceLastSuccess < MIN_REFRESH_INTERVAL) {
+        console.log('Skipping refresh due to consecutive failures');
+        return;
+      }
+      // إعادة تعيين العداد بعد فترة من الزمن
+      consecutiveFailures = 0;
+    }
+    
+    try {
       await forceRefreshPlaceData(false); // تحديث صامت
+      consecutiveFailures = 0; // إعادة تعيين العداد عند النجاح
+      lastSuccessfulRefresh = Date.now();
+    } catch (err) {
+      consecutiveFailures++;
+      console.warn(`Auto refresh failed (${consecutiveFailures}/${MAX_CONSECUTIVE_FAILURES}):`, err.message);
     }
   }, AUTO_REFRESH_INTERVAL);
 }
@@ -1801,6 +2276,23 @@ function stopAutoRefresh() {
     autoRefreshInterval = null;
   }
 }
+
+// دالة لتنظيف جميع المؤقتات
+function cleanupAllTimers() {
+  if (autoRefreshInterval) {
+    clearInterval(autoRefreshInterval);
+    autoRefreshInterval = null;
+  }
+  if (packageStatusCountdownTimer) {
+    clearInterval(packageStatusCountdownTimer);
+    packageStatusCountdownTimer = null;
+  }
+  // إضافة أي مؤقتات أخرى هنا
+}
+
+// تنظيف المؤقتات عند إغلاق الصفحة
+window.addEventListener('beforeunload', cleanupAllTimers);
+window.addEventListener('unload', cleanupAllTimers);
 
 // دالة لفحص البيانات المحفوظة محلياً
 function debugStoredData() {
@@ -1892,7 +2384,25 @@ async function refreshPackageUIFromDashboard() {
         const dh = diffDaysHours(new Date(), end);
         const days = dh.days ?? 0;
         const hours = dh.hours ?? 0;
-        el.textContent = `العدّاد: ${days} يوم و${hours} ساعة`;
+        const minutes = Math.floor((dh.ms % (1000 * 60 * 60)) / (1000 * 60));
+        
+        // عرض العدّاد بتنسيق أفضل
+        let countdownText = '';
+        if (days > 0) {
+          countdownText = `العدّاد: ${days} يوم`;
+          if (hours > 0) {
+            countdownText += ` و${hours} ساعة`;
+          }
+        } else if (hours > 0) {
+          countdownText = `العدّاد: ${hours} ساعة`;
+          if (minutes > 0) {
+            countdownText += ` و${minutes} دقيقة`;
+          }
+        } else {
+          countdownText = `العدّاد: ${minutes} دقيقة`;
+        }
+        
+        el.textContent = countdownText;
         el.classList.remove('countdown-ok','countdown-warn','countdown-crit');
         if (dh.ms <= 48*60*60*1000) el.classList.add('countdown-crit');
         else if (dh.ms <= 7*24*60*60*1000) el.classList.add('countdown-warn');
@@ -1917,7 +2427,7 @@ async function refreshPackageUIFromDashboard() {
     if (pkgStatus === 'مفعلة') {
       if (btn) { btn.disabled = true; btn.style.opacity = '0.8'; btn.textContent = 'الاشتراك مُفعّل'; }
       let msg = 'حالة الباقة: مفعلة';
-      if (startDate && endDate) {
+      if (startDate && endDate && !isNaN(startDate.getTime()) && !isNaN(endDate.getTime())) {
         const sTxt = startDate.toISOString().split('T')[0];
         const eTxt = endDate.toISOString().split('T')[0];
         msg += ` — البداية: ${sTxt} · النهاية: ${eTxt}${remaining !== null ? ` · المتبقي: ${remaining} يوم` : ''}`;
@@ -1926,7 +2436,10 @@ async function refreshPackageUIFromDashboard() {
 
       [card, inlineCard].forEach(c => { if (c) c.style.display = 'block'; });
       const pn = packageName || (pkgId ? `ID ${pkgId}` : 'غير معروفة');
-      const eTxt = endDate ? endDate.toISOString().split('T')[0] : '';
+      let eTxt = '';
+      if (endDate && !isNaN(endDate.getTime())) {
+        eTxt = endDate.toISOString().split('T')[0];
+      }
       const remTxt = remaining !== null ? ` — المتبقي ${remaining} يوم` : '';
       if (cardText) cardText.textContent = `باقتك الحالية: ${pn}${eTxt ? ` — تنتهي في ${eTxt}` : ''}${remTxt}`;
       if (inlineText) inlineText.textContent = `باقتك الحالية: ${pn}${eTxt ? ` — تنتهي في ${eTxt}` : ''}${remTxt}`;
@@ -1958,7 +2471,7 @@ async function refreshPackageUIFromDashboard() {
       clearPackageCountdown();
       if (btn) { btn.disabled = false; btn.style.opacity = '1'; btn.textContent = 'تجديد الاشتراك'; }
       let msg = 'حالة الباقة: منتهية';
-      if (startDate && endDate) {
+      if (startDate && endDate && !isNaN(startDate.getTime()) && !isNaN(endDate.getTime())) {
         const sTxt = startDate.toISOString().split('T')[0];
         const eTxt = endDate.toISOString().split('T')[0];
         msg += ` — البداية: ${sTxt} · النهاية: ${eTxt}`;
@@ -1966,7 +2479,10 @@ async function refreshPackageUIFromDashboard() {
       if (hint) { hint.textContent = msg; hint.classList.add('expired'); }
       [card, inlineCard].forEach(c => { if (c) c.style.display = 'block'; });
       const pn = packageName || (pkgId ? `ID ${pkgId}` : 'غير معروفة');
-      const eTxt = endDate ? endDate.toISOString().split('T')[0] : '';
+      let eTxt = '';
+      if (endDate && !isNaN(endDate.getTime())) {
+        eTxt = endDate.toISOString().split('T')[0];
+      }
       if (cardText) cardText.textContent = `باقتك الحالية: ${pn} — الحالة: منتهية${eTxt ? ` — انتهت في ${eTxt}` : ''}`;
       if (inlineText) inlineText.textContent = `باقتك الحالية: ${pn} — الحالة: منتهية${eTxt ? ` — انتهت في ${eTxt}` : ''}`;
       return;
@@ -2137,7 +2653,10 @@ function updateInlinePackageInfoCard(place) {
       let remaining = (startDate && endDate) ? daysBetween(today, endDate) : null;
       if (remaining !== null && remaining < 0) remaining = 0;
       const pn = packageName || (pkgId ? `ID ${pkgId}` : 'غير معروفة');
-      const eTxt = endDate ? endDate.toISOString().split('T')[0] : '';
+      let eTxt = '';
+      if (endDate && !isNaN(endDate.getTime())) {
+        eTxt = endDate.toISOString().split('T')[0];
+      }
       text.textContent = `باقتك الحالية: ${pn}${eTxt ? ` — تنتهي في ${eTxt}` : ''}${remaining !== null ? ` — المتبقي ${remaining} يوم` : ''}`;
       card.style.display = 'block';
 
@@ -2146,7 +2665,25 @@ function updateInlinePackageInfoCard(place) {
           const dh = diffDaysHours(new Date(), endDate);
           const days = dh.days ?? 0;
           const hours = dh.hours ?? 0;
-          countdown.textContent = `العدّاد: ${days} يوم و${hours} ساعة`;
+          const minutes = Math.floor((dh.ms % (1000 * 60 * 60)) / (1000 * 60));
+          
+          // عرض العدّاد بتنسيق أفضل
+          let countdownText = '';
+          if (days > 0) {
+            countdownText = `العدّاد: ${days} يوم`;
+            if (hours > 0) {
+              countdownText += ` و${hours} ساعة`;
+            }
+          } else if (hours > 0) {
+            countdownText = `العدّاد: ${hours} ساعة`;
+            if (minutes > 0) {
+              countdownText += ` و${minutes} دقيقة`;
+            }
+          } else {
+            countdownText = `العدّاد: ${minutes} دقيقة`;
+          }
+          
+          countdown.textContent = countdownText;
           countdown.classList.remove('countdown-ok','countdown-warn','countdown-crit');
           if (dh.ms <= 48*60*60*1000) countdown.classList.add('countdown-crit');
           else if (dh.ms <= 7*24*60*60*1000) countdown.classList.add('countdown-warn');
@@ -2168,7 +2705,10 @@ function updateInlinePackageInfoCard(place) {
 
     if (pkgStatus === 'منتهية') {
       const pn = packageName || (pkgId ? `ID ${pkgId}` : 'غير معروفة');
-      const eTxt = endDate ? endDate.toISOString().split('T')[0] : '';
+      let eTxt = '';
+      if (endDate && !isNaN(endDate.getTime())) {
+        eTxt = endDate.toISOString().split('T')[0];
+      }
       text.textContent = `باقتك الحالية: ${pn} — الحالة: منتهية${eTxt ? ` — انتهت في ${eTxt}` : ''}`;
       card.style.display = 'block';
       return;
@@ -2182,4 +2722,3 @@ function updateInlinePackageInfoCard(place) {
     console.warn('updateInlinePackageInfoCard error', e);
   }
 }
-

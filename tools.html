@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>مولد الفواتير وعروض الأسعار</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
   <style>
     body { font-family: "Tahoma", sans-serif; background:#f7f7f7; padding:20px; }
     h2 { text-align:center; }
@@ -13,6 +13,7 @@
     .btn { padding:10px 20px; margin:10px; cursor:pointer; border:none; border-radius:5px; }
     .add { background:#4CAF50; color:#fff; }
     .pdf { background:#2196F3; color:#fff; }
+    #invoice { background:#fff; padding:15px; border-radius:10px; }
   </style>
 </head>
 <body>
@@ -28,35 +29,25 @@
   <br><br>
   <label>اسم التاجر/المحل: </label>
   <input type="text" id="merchant" placeholder="مثال: شركة مسلم تك">
-  <br><br>
 
-  <table id="itemsTable">
-    <tr>
-      <th>الصنف</th>
-      <th>الكمية</th>
-      <th>سعر الوحدة</th>
-      <th>الإجمالي</th>
-      <th>✖</th>
-    </tr>
-  </table>
+  <div id="invoice">
+    <h3 id="invoiceTitle">فاتورة</h3>
+    <p id="merchantName">التاجر: بدون اسم</p>
+
+    <table id="itemsTable">
+      <tr>
+        <th>الصنف</th>
+        <th>الكمية</th>
+        <th>سعر الوحدة</th>
+        <th>الإجمالي</th>
+        <th>✖</th>
+      </tr>
+    </table>
+
+    <h3>الإجمالي النهائي: <span id="total">0</span> ج.م</h3>
+  </div>
 
   <button class="btn add" onclick="addRow()">➕ إضافة صنف</button>
-
-  <h3>الإجمالي النهائي: <span id="total">0</span> ج.م</h3>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
-  <script>
-    document.querySelector(".download").addEventListener("click", () => {
-      const element = document.querySelector("table");
-      html2pdf().set({
-        margin: 10,
-        filename: 'عرض-الأسعار.pdf',
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-      }).from(element).save();
-    });
-  </script>
-
-
   <button class="btn pdf" onclick="generatePDF()">📥 تحميل PDF</button>
 
   <script>
@@ -64,7 +55,7 @@
       let table = document.getElementById("itemsTable");
       let row = table.insertRow();
       row.innerHTML = `
-        <td><input type="text" placeholder="اسم الصنف"></td>
+        <td><input type="text" placeholder="اسم الصنف" oninput="updateInvoice()"></td>
         <td><input type="number" value="1" oninput="calcTotal()"></td>
         <td><input type="number" value="0" oninput="calcTotal()"></td>
         <td class="rowTotal">0</td>
@@ -77,47 +68,31 @@
       let rows = table.rows;
       let grandTotal = 0;
       for (let i = 1; i < rows.length; i++) {
-        let qty = rows[i].cells[1].children[0].value;
-        let price = rows[i].cells[2].children[0].value;
+        let qty = rows[i].cells[1].children[0].value || 0;
+        let price = rows[i].cells[2].children[0].value || 0;
         let rowTotal = qty * price;
         rows[i].cells[3].innerText = rowTotal;
         grandTotal += rowTotal;
       }
       document.getElementById("total").innerText = grandTotal;
+      updateInvoice();
     }
 
-    async function generatePDF() {
-      const { jsPDF } = window.jspdf;
-      let doc = new jsPDF();
+    function updateInvoice() {
       let type = document.getElementById("docType").value;
       let merchant = document.getElementById("merchant").value || "بدون اسم";
+      document.getElementById("invoiceTitle").innerText = type;
+      document.getElementById("merchantName").innerText = "التاجر: " + merchant;
+    }
 
-      doc.setFontSize(18);
-      doc.text(type, 105, 20, { align: "center" });
-      doc.setFontSize(12);
-      doc.text("التاجر: " + merchant, 14, 30);
-
-      let table = document.getElementById("itemsTable");
-      let y = 40;
-
-      doc.text("الصنف        الكمية        سعر الوحدة        الإجمالي", 14, y);
-      y += 10;
-
-      let rows = table.rows;
-      for (let i = 1; i < rows.length; i++) {
-        let item = rows[i].cells[0].children[0].value;
-        let qty = rows[i].cells[1].children[0].value;
-        let price = rows[i].cells[2].children[0].value;
-        let total = rows[i].cells[3].innerText;
-        doc.text(`${item}        ${qty}        ${price}        ${total}`, 14, y);
-        y += 10;
-      }
-
-      y += 10;
-      let grandTotal = document.getElementById("total").innerText;
-      doc.text("الإجمالي النهائي: " + grandTotal + " ج.م", 14, y);
-
-      doc.save(`${type}.pdf`);
+    function generatePDF() {
+      const element = document.getElementById("invoice");
+      html2pdf().set({
+        margin: 10,
+        filename: document.getElementById("docType").value + '.pdf',
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      }).from(element).save();
     }
   </script>
 

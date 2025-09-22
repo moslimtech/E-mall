@@ -43,6 +43,19 @@
   <button class="btn add" onclick="addRow()">➕ إضافة صنف</button>
 
   <h3>الإجمالي النهائي: <span id="total">0</span> ج.م</h3>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
+  <script>
+    document.querySelector(".download").addEventListener("click", () => {
+      const element = document.querySelector("table");
+      html2pdf().set({
+        margin: 10,
+        filename: 'عرض-الأسعار.pdf',
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      }).from(element).save();
+    });
+  </script>
+
 
   <button class="btn pdf" onclick="generatePDF()">📥 تحميل PDF</button>
 

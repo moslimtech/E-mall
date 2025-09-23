@@ -13,6 +13,8 @@
     .btn { padding:10px 20px; margin:10px; cursor:pointer; border:none; border-radius:5px; }
     .add { background:#4CAF50; color:#fff; }
     .pdf { background:#2196F3; color:#fff; }
+    .print { background:#FF9800; color:#fff; }
+    .share { background:#9C27B0; color:#fff; }
     #invoice { background:#fff; padding:15px; border-radius:10px; }
   </style>
 </head>
@@ -21,14 +23,14 @@
   <h2>🧾 مولد الفواتير وعروض الأسعار</h2>
 
   <label>اختر النوع: </label>
-  <select id="docType">
+  <select id="docType" onchange="updateInvoice()">
     <option value="فاتورة">فاتورة</option>
     <option value="عرض أسعار">عرض أسعار</option>
   </select>
 
   <br><br>
   <label>اسم التاجر/المحل: </label>
-  <input type="text" id="merchant" placeholder="مثال: شركة مسلم تك">
+  <input type="text" id="merchant" placeholder="مثال: شركة مسلم تك" oninput="updateInvoice()">
 
   <div id="invoice">
     <h3 id="invoiceTitle">فاتورة</h3>
@@ -49,6 +51,8 @@
 
   <button class="btn add" onclick="addRow()">➕ إضافة صنف</button>
   <button class="btn pdf" onclick="generatePDF()">📥 تحميل PDF</button>
+  <button class="btn print" onclick="printInvoice()">🖨️ طباعة</button>
+  <button class="btn share" onclick="shareInvoice()">📤 مشاركة</button>
 
   <script>
     function addRow() {
@@ -93,6 +97,36 @@
         html2canvas: { scale: 2 },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
       }).from(element).save();
+    }
+
+    function printInvoice() {
+      let printContents = document.getElementById("invoice").innerHTML;
+      let originalContents = document.body.innerHTML;
+      document.body.innerHTML = printContents;
+      window.print();
+      document.body.innerHTML = originalContents;
+      location.reload();
+    }
+
+    async function shareInvoice() {
+      const element = document.getElementById("invoice");
+      const opt = {
+        margin: 10,
+        filename: document.getElementById("docType").value + '.pdf',
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+      const pdfBlob = await html2pdf().set(opt).from(element).toPdf().get('pdf').then(pdf => pdf.output('blob'));
+      if (navigator.share) {
+        const file = new File([pdfBlob], opt.filename, { type: 'application/pdf' });
+        navigator.share({
+          title: 'مستند',
+          text: 'إليك ' + document.getElementById("docType").value,
+          files: [file]
+        });
+      } else {
+        alert("المشاركة غير مدعومة في هذا الجهاز. يمكنك تحميل الملف وإرساله يدويًا.");
+      }
     }
   </script>
 

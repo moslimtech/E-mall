@@ -2,133 +2,122 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <title>مولد الفواتير وعروض الأسعار</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
-  <style>
-    body { font-family: "Tahoma", sans-serif; background:#f7f7f7; padding:20px; }
-    h2 { text-align:center; }
-    table { width:100%; border-collapse: collapse; margin-top:10px; background:#fff; }
-    table, th, td { border:1px solid #ccc; }
-    th, td { padding:8px; text-align:center; }
-    .btn { padding:10px 20px; margin:10px; cursor:pointer; border:none; border-radius:5px; }
-    .add { background:#4CAF50; color:#fff; }
-    .pdf { background:#2196F3; color:#fff; }
-    .print { background:#FF9800; color:#fff; }
-    .share { background:#9C27B0; color:#fff; }
-    #invoice { background:#fff; padding:15px; border-radius:10px; }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>فاتورة / عرض أسعار</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
+<body class="bg-gray-100 p-4">
+  <div class="max-w-3xl mx-auto bg-white rounded-xl shadow-lg p-6">
+    <h1 id="docTitle" class="text-2xl font-bold text-center mb-4">فاتورة</h1>
 
-  <h2>🧾 مولد الفواتير وعروض الأسعار</h2>
+    <!-- اختيار النوع -->
+    <div class="flex justify-center gap-4 mb-6">
+      <button onclick="setDocType('فاتورة')" class="px-4 py-2 bg-blue-600 text-white rounded-lg">فاتورة</button>
+      <button onclick="setDocType('عرض أسعار')" class="px-4 py-2 bg-green-600 text-white rounded-lg">عرض أسعار</button>
+    </div>
 
-  <label>اختر النوع: </label>
-  <select id="docType" onchange="updateInvoice()">
-    <option value="فاتورة">فاتورة</option>
-    <option value="عرض أسعار">عرض أسعار</option>
-  </select>
+    <!-- بيانات -->
+    <div class="mb-4">
+      <label class="block mb-1 font-medium">اسم العميل:</label>
+      <input id="customer" type="text" class="w-full border rounded-lg p-2">
+    </div>
 
-  <br><br>
-  <label>اسم التاجر/المحل: </label>
-  <input type="text" id="merchant" placeholder="مثال: شركة مسلم تك" oninput="updateInvoice()">
-
-  <div id="invoice">
-    <h3 id="invoiceTitle">فاتورة</h3>
-    <p id="merchantName">التاجر: بدون اسم</p>
-
-    <table id="itemsTable">
-      <tr>
-        <th>الصنف</th>
-        <th>الكمية</th>
-        <th>سعر الوحدة</th>
-        <th>الإجمالي</th>
-        <th>✖</th>
-      </tr>
+    <!-- جدول الأصناف -->
+    <table class="w-full text-center border mb-4">
+      <thead>
+        <tr class="bg-gray-200">
+          <th class="p-2 border">الصنف</th>
+          <th class="p-2 border">الكمية</th>
+          <th class="p-2 border">السعر</th>
+          <th class="p-2 border">الإجمالي</th>
+          <th class="p-2 border">✖</th>
+        </tr>
+      </thead>
+      <tbody id="items"></tbody>
     </table>
+    <button onclick="addRow()" class="w-full bg-blue-500 text-white py-2 rounded-lg mb-4">➕ إضافة صنف</button>
 
-    <h3>الإجمالي النهائي: <span id="total">0</span> ج.م</h3>
+    <!-- الإجمالي -->
+    <div class="text-right font-bold text-xl mb-4">
+      الإجمالي: <span id="total">0</span> ج.م
+    </div>
+
+    <!-- أزرار -->
+    <div class="flex flex-wrap justify-center gap-4">
+      <button onclick="downloadPDF()" class="px-4 py-2 bg-red-600 text-white rounded-lg">📥 تحميل PDF</button>
+      <button onclick="window.print()" class="px-4 py-2 bg-gray-700 text-white rounded-lg">🖨️ طباعة</button>
+      <button onclick="shareDoc()" class="px-4 py-2 bg-green-600 text-white rounded-lg">📤 مشاركة</button>
+    </div>
   </div>
 
-  <button class="btn add" onclick="addRow()">➕ إضافة صنف</button>
-  <button class="btn pdf" onclick="generatePDF()">📥 تحميل PDF</button>
-  <button class="btn print" onclick="printInvoice()">🖨️ طباعة</button>
-  <button class="btn share" onclick="shareInvoice()">📤 مشاركة</button>
-
   <script>
+    const { jsPDF } = window.jspdf;
+    let docType = "فاتورة";
+
+    function setDocType(type) {
+      docType = type;
+      document.getElementById("docTitle").textContent = type;
+    }
+
     function addRow() {
-      let table = document.getElementById("itemsTable");
-      let row = table.insertRow();
-      row.innerHTML = `
-        <td><input type="text" placeholder="اسم الصنف" oninput="updateInvoice()"></td>
-        <td><input type="number" value="1" oninput="calcTotal()"></td>
-        <td><input type="number" value="0" oninput="calcTotal()"></td>
-        <td class="rowTotal">0</td>
-        <td><button onclick="this.parentElement.parentElement.remove();calcTotal();">✖</button></td>
-      `;
+      const row = `
+        <tr>
+          <td class="border p-2"><input type="text" class="w-full text-center"></td>
+          <td class="border p-2"><input type="number" value="1" min="1" class="w-full text-center" oninput="updateTotal()"></td>
+          <td class="border p-2"><input type="number" value="0" min="0" class="w-full text-center" oninput="updateTotal()"></td>
+          <td class="border p-2 total">0</td>
+          <td class="border p-2"><button onclick="this.closest('tr').remove(); updateTotal()">✖</button></td>
+        </tr>`;
+      document.getElementById("items").insertAdjacentHTML("beforeend", row);
     }
 
-    function calcTotal() {
-      let table = document.getElementById("itemsTable");
-      let rows = table.rows;
-      let grandTotal = 0;
-      for (let i = 1; i < rows.length; i++) {
-        let qty = rows[i].cells[1].children[0].value || 0;
-        let price = rows[i].cells[2].children[0].value || 0;
-        let rowTotal = qty * price;
-        rows[i].cells[3].innerText = rowTotal;
-        grandTotal += rowTotal;
-      }
-      document.getElementById("total").innerText = grandTotal;
-      updateInvoice();
+    function updateTotal() {
+      let total = 0;
+      document.querySelectorAll("#items tr").forEach(tr => {
+        const qty = tr.querySelector("td:nth-child(2) input").value || 0;
+        const price = tr.querySelector("td:nth-child(3) input").value || 0;
+        const sum = qty * price;
+        tr.querySelector(".total").textContent = sum;
+        total += sum;
+      });
+      document.getElementById("total").textContent = total;
     }
 
-    function updateInvoice() {
-      let type = document.getElementById("docType").value;
-      let merchant = document.getElementById("merchant").value || "بدون اسم";
-      document.getElementById("invoiceTitle").innerText = type;
-      document.getElementById("merchantName").innerText = "التاجر: " + merchant;
+    function downloadPDF() {
+      const pdf = new jsPDF("p", "pt", "a4");
+      pdf.setFont("helvetica");
+
+      pdf.text(docType, 250, 40);
+      pdf.text("اسم العميل: " + (document.getElementById("customer").value || "-"), 40, 70);
+
+      let y = 110;
+      pdf.text("الصنف | الكمية | السعر | الإجمالي", 40, y);
+      y += 20;
+
+      document.querySelectorAll("#items tr").forEach(tr => {
+        const name = tr.querySelector("td:nth-child(1) input").value || "-";
+        const qty = tr.querySelector("td:nth-child(2) input").value || "0";
+        const price = tr.querySelector("td:nth-child(3) input").value || "0";
+        const sum = tr.querySelector(".total").textContent || "0";
+        pdf.text(`${name} | ${qty} | ${price} | ${sum}`, 40, y);
+        y += 20;
+      });
+
+      y += 20;
+      pdf.text("الإجمالي: " + document.getElementById("total").textContent + " ج.م", 40, y);
+
+      pdf.save(docType + ".pdf");
     }
 
-    function generatePDF() {
-      const element = document.getElementById("invoice");
-      html2pdf().set({
-        margin: 10,
-        filename: document.getElementById("docType").value + '.pdf',
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-      }).from(element).save();
-    }
-
-    function printInvoice() {
-      let printContents = document.getElementById("invoice").innerHTML;
-      let originalContents = document.body.innerHTML;
-      document.body.innerHTML = printContents;
-      window.print();
-      document.body.innerHTML = originalContents;
-      location.reload();
-    }
-
-    async function shareInvoice() {
-      const element = document.getElementById("invoice");
-      const opt = {
-        margin: 10,
-        filename: document.getElementById("docType").value + '.pdf',
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-      };
-      const pdfBlob = await html2pdf().set(opt).from(element).toPdf().get('pdf').then(pdf => pdf.output('blob'));
+    async function shareDoc() {
+      const text = `${docType}\nاسم العميل: ${document.getElementById("customer").value}\nالإجمالي: ${document.getElementById("total").textContent} ج.م`;
       if (navigator.share) {
-        const file = new File([pdfBlob], opt.filename, { type: 'application/pdf' });
-        navigator.share({
-          title: 'مستند',
-          text: 'إليك ' + document.getElementById("docType").value,
-          files: [file]
-        });
+        await navigator.share({ title: docType, text });
       } else {
-        alert("المشاركة غير مدعومة في هذا الجهاز. يمكنك تحميل الملف وإرساله يدويًا.");
+        alert("المشاركة غير مدعومة على هذا الجهاز");
       }
     }
   </script>
-
 </body>
 </html>

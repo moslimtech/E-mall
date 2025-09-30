@@ -1,0 +1,3746 @@
+<!-- 
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+
+
+    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+   <script>
+      const userLang = navigator.language || navigator.userLanguage;
+      const manifest = document.createElement('link');
+      manifest.rel = 'manifest';
+    
+      if (userLang.startsWith('ar')) {
+        manifest.href = '/Ban/manifest-ar.json?v=1';
+      } else {
+        manifest.href = '/Ban/manifest-en.json?v=1';
+      }
+    
+      document.head.appendChild(manifest);
+    </script>
+
+
+
+
+
+    <title>بان - إدارة الأماكن والإعلانات</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        /* CSS مدمج داخل الملف */
+        :root {
+            --primary-color: #4f46e5;
+            --primary-hover: #4338ca;
+            --success-color: #10b981;
+            --error-color: #ef4444;
+            --warning-color: #f59e0b;
+            --background-color: #f8fafc;
+            --card-background: #ffffff;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --border-color: #e5e7eb;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-primary);
+            line-height: 1.6;
+            transition: all 0.3s ease;
+        }
+
+        body.dark {
+            --background-color: #111827;
+            --card-background: #1f2937;
+            --text-primary: #f9fafb;
+            --text-secondary: #d1d5db;
+            --border-color: #374151;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #6366f1 100%);
+            color: white;
+            padding: 1rem 0;
+            box-shadow: var(--shadow-lg);
+            margin-bottom: 2rem;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .auth-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+        }
+
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+
+        .btn-success {
+            background: var(--success-color);
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .btn-danger {
+            background: var(--error-color);
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .theme-toggle {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 0.5rem;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            background: var(--card-background);
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 1rem;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .tab:hover {
+            background: rgba(79, 70, 229, 0.1);
+            color: var(--primary-color);
+        }
+
+        .tab.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        /* Tab Content */
+        .tab-content {
+            background: var(--card-background);
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+        }
+
+        /* Status Bars */
+        #placeStatusBar {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            box-shadow: var(--shadow);
+        }
+
+        #placeStatusMessage {
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        #placeStatusButtons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .status-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+        }
+
+        .status-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .status-btn.active {
+            background: rgba(255, 255, 255, 0.9);
+            color: #d97706;
+            font-weight: 600;
+        }
+
+        /* Subscription Status Bar */
+        #subscriptionStatusBar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        #subscriptionStatusBar .subscription-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        #subscriptionTitle {
+            margin: 0 0 5px 0;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        #subscriptionDetails {
+            margin: 0;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        #subscriptionCountdown {
+            background: rgba(255,255,255,0.2);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-weight: 600;
+            min-width: 120px;
+            text-align: center;
+        }
+
+        /* Package Info Card */
+        #packageInfoCard {
+            background: #f0f9ff;
+            border: 1px solid #0ea5e9;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 10px 0;
+        }
+
+        body.dark #packageInfoCard {
+            background: #1e293b;
+            border-color: #0ea5e9;
+        }
+
+        #packageInfoText {
+            font-weight: 600;
+            color: #0369a1;
+            margin-bottom: 5px;
+        }
+
+        body.dark #packageInfoText {
+            color: #38bdf8;
+        }
+
+        #packageInfoCountdown {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .countdown-ok { color: #059669; }
+        .countdown-warn { color: #d97706; }
+        .countdown-crit { color: #dc2626; }
+
+        /* Activate Button & Hint */
+        #activateHint {
+            font-size: 14px;
+            margin-top: 5px;
+            padding: 8px;
+            border-radius: 4px;
+        }
+
+        #activateHint.active {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        #activateHint.pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        #activateHint.expired {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        body.dark #activateHint.active {
+            background: #064e3b;
+            color: #a7f3d0;
+        }
+
+        body.dark #activateHint.pending {
+            background: #78350f;
+            color: #fcd34d;
+        }
+
+        body.dark #activateHint.expired {
+            background: #7f1d1d;
+            color: #fca5a5;
+        }
+
+        #packageCountdown {
+            font-size: 14px;
+            font-weight: 600;
+            margin-top: 5px;
+        }
+
+
+
+        /* أضف هذا الكود هنا المعدل */
+        .package-countdown {
+            font-size: 14px;
+            font-weight: 600;
+            margin-top: 5px;
+            padding: 5px;
+            border-radius: 4px;
+            background: rgba(0,0,0,0.1);
+        }
+        
+        .countdown-ok { 
+            color: #059669; 
+            background: rgba(16, 185, 129, 0.1);
+        }
+        
+        .countdown-warn { 
+            color: #d97706; 
+            background: rgba(245, 158, 11, 0.1);
+        }
+        
+        .countdown-crit { 
+            color: #dc2626; 
+            background: rgba(239, 68, 68, 0.1);
+        }
+        
+        body.dark .package-countdown {
+            background: rgba(255,255,255,0.1);
+        }
+
+
+
+        /* المعدل أضف هذا الكود هنا */
+
+
+        /* Forms */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 1rem;
+            background: var(--card-background);
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+
+        /* Preview */
+        .preview {
+            margin-top: 1rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .preview img {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 6px;
+            border: 2px solid var(--border-color);
+        }
+
+        .preview-image {
+            position: relative;
+            display: inline-block;
+        }
+
+        .remove-image {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: var(--error-color);
+            color: white;
+            border: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Packages Grid */
+        .packages-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .pkg-card {
+            background: var(--card-background);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pkg-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .pkg-card h3 {
+            margin-bottom: 1rem;
+            color: var(--primary-color);
+            font-size: 1.2rem;
+        }
+
+        /* تمييز الباقة النشطة */
+        .pkg-card.active {
+            border-color: var(--success-color);
+            background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%);
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
+        }
+
+        body.dark .pkg-card.active {
+            background: linear-gradient(135deg, #064e3b 0%, #065f46 100%);
+            border-color: var(--success-color);
+        }
+
+        .pkg-card.active h3 {
+            color: var(--success-color);
+        }
+
+        .pkg-card.active::before {
+            content: "✓ الباقة المفعلة";
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: var(--success-color);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .pkg-card.pending {
+            border-color: var(--warning-color);
+            background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+            box-shadow: 0 0 20px rgba(245, 158, 11, 0.2);
+        }
+
+        body.dark .pkg-card.pending {
+            background: linear-gradient(135deg, #78350f 0%, #92400e 100%);
+            border-color: var(--warning-color);
+        }
+
+        .pkg-card.pending h3 {
+            color: var(--warning-color);
+        }
+
+        .pkg-card.pending::before {
+            content: "⏳ قيد الدفع";
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: var(--warning-color);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .pkg-card.expired {
+            border-color: var(--error-color);
+            background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.2);
+        }
+
+        body.dark .pkg-card.expired {
+            background: linear-gradient(135deg, #7f1d1d 0%, #991b1b 100%);
+            border-color: var(--error-color);
+        }
+
+        .pkg-card.expired h3 {
+            color: var(--error-color);
+        }
+
+        .pkg-card.expired::before {
+            content: "❌ منتهية";
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: var(--error-color);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .choose-pkg {
+            width: 100%;
+            margin-top: 1rem;
+            padding: 0.75rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        /* حالات أزرار الباقات */
+        .choose-pkg.btn-activate {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .choose-pkg.btn-activate:hover {
+            background: var(--primary-hover);
+        }
+
+        .choose-pkg.btn-active {
+            background: var(--success-color);
+            color: white;
+            cursor: not-allowed;
+            opacity: 0.8;
+        }
+
+        .choose-pkg.btn-pending {
+            background: var(--warning-color);
+            color: white;
+            cursor: not-allowed;
+            opacity: 0.8;
+        }
+
+        .choose-pkg.btn-expired {
+            background: var(--error-color);
+            color: white;
+        }
+
+        .choose-pkg.btn-expired:hover {
+            background: #dc2626;
+        }
+
+        .choose-pkg.btn-trial-used {
+            background: #9ca3af;
+            color: white;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        /* Ads */
+        .ad-card {
+            background: var(--card-background);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            box-shadow: var(--shadow);
+        }
+
+        .ad-card h4 {
+            margin-bottom: 0.5rem;
+            color: var(--primary-color);
+        }
+
+        .ad-card .meta {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .ad-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .ad-images {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin: 1rem 0;
+        }
+
+        .ad-images img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+        }
+
+        .edit-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .delete-btn {
+            background: var(--error-color);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .img-placeholder-file {
+            width: 80px;
+            height: 80px;
+            background: var(--border-color);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            text-align: center;
+        }
+
+        /* Alerts */
+        .alert {
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 6px;
+            font-weight: 500;
+            display: none;
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+
+        body.dark .alert-success {
+            background: #064e3b;
+            color: #a7f3d0;
+        }
+
+        body.dark .alert-error {
+            background: #7f1d1d;
+            color: #fca5a5;
+        }
+
+        /* Loading */
+        #loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: var(--card-background);
+            padding: 2rem;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+
+        /* Auto-locate button */
+        .auto-locate-btn {
+            background: var(--success-color);
+            margin-top: 0.5rem;
+            width: 100%;
+        }
+
+        .auto-locate-btn:hover {
+            background: #059669;
+        }
+
+        /* Ad Quota Notice */
+        #adQuotaNotice {
+            background: #fff3cd;
+            color: #856404;
+            padding: 10px;
+            border-radius: 6px;
+            margin: 10px 0;
+            display: none;
+        }
+
+        body.dark #adQuotaNotice {
+            background: #78350f;
+            color: #fcd34d;
+        }
+
+        #adQuotaSummary {
+            color: var(--text-secondary);
+            margin: 8px 0;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .tabs {
+                flex-direction: column;
+            }
+
+            .tab {
+                border-bottom: 1px solid var(--border-color);
+            }
+
+            .tab:last-child {
+                border-bottom: none;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .packages-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .ad-actions {
+                flex-direction: column;
+            }
+
+            #subscriptionStatusBar .subscription-content {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            #subscriptionCountdown {
+                width: 100%;
+            }
+        }
+
+        /* Utility Classes */
+        .text-center {
+            text-align: center;
+        }
+
+        .text-success {
+            color: var(--success-color);
+        }
+
+        .text-error {
+            color: var(--error-color);
+        }
+
+        .mb-1 {
+            margin-bottom: 0.5rem;
+        }
+
+        .mb-2 {
+            margin-bottom: 1rem;
+        }
+
+        .mb-3 {
+            margin-bottom: 1.5rem;
+        }
+
+        .mt-1 {
+            margin-top: 0.5rem;
+        }
+
+        .mt-2 {
+            margin-top: 1rem;
+        }
+
+        .mt-3 {
+            margin-top: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+   
+    <div id="loading">
+        <div class="spinner"></div>
+    </div>
+
+
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <i class="fas fa-store"></i>
+                بان
+            </div>
+            <div class="auth-section">
+                <button onclick="location.href='https://moslimtech.github.io/Ban/'" class="btn btn-success">
+                    <i class="fas fa-bullhorn"></i>
+                    الإعلانات العامة
+                </button>
+                <button id="themeToggleBtn" class="theme-toggle" title="تغيير المظهر">
+                    <i id="themeIcon" class="fas fa-moon"></i>
+                    <span id="themeLabel" style="display: none;">الوضع الليلي</span>
+                </button>
+                <div id="loggedInUser" class="user-info" style="display: none;">
+                    <i class="fas fa-user"></i>
+                    <span></span>
+                </div>
+                <button id="loginBtn" class="btn">
+                    <i class="fas fa-sign-in-alt"></i>
+                    تسجيل الدخول
+                </button>
+                <button id="logoutBtn" class="btn btn-secondary" style="display: none;">
+                    <i class="fas fa-sign-out-alt"></i>
+                    تسجيل الخروج
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+       
+        <div id="successAlert" class="alert alert-success"></div>
+        <div id="errorAlert" class="alert alert-error"></div>
+
+     
+        <div id="placeStatusBar" style="display: none;">
+            <div id="placeStatusMessage"></div>
+            <div id="placeStatusButtons">
+                <button class="status-btn" data-status="مفتوح">مفتوح</button>
+                <button class="status-btn" data-status="مغلق">مغلق</button>
+                <button class="status-btn" data-status="مغلق للصلاة">مغلق للصلاة</button>
+                <button class="status-btn" data-status="تحت التجهيز">تحت التجهيز</button>
+            </div>
+        </div>
+
+      
+        <div id="subscriptionStatusBar" style="display: none;">
+            <div class="subscription-content">
+                <div>
+                    <h4 id="subscriptionTitle"></h4>
+                    <p id="subscriptionDetails"></p>
+                </div>
+                <div id="subscriptionCountdown"></div>
+            </div>
+        </div>
+
+   
+        <div class="tabs">
+            <button class="tab active" id="tab-places" onclick="showTab('places')">
+                <i class="fas fa-store"></i>
+                بيانات المكان
+            </button>
+            <button class="tab" id="tab-ads" onclick="showTab('ads')" style="display: none;">
+                <i class="fas fa-bullhorn"></i>
+                الإعلانات
+            </button>
+            <button class="tab" id="tab-packages" onclick="showTab('packages')">
+                <i class="fas fa-box"></i>
+                الباقات
+            </button>
+        </div>
+
+      
+        <div id="places-tab" class="tab-content">
+            <h2>بيانات المكان أو الخدمة</h2>
+
+            <div id="packageInfoCard" style="display: none;">
+                <div id="packageInfoText"></div>
+                <div id="packageInfoCountdown"></div>
+            </div>
+
+            <form id="placeForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="placeName">اسم المكان أو الخدمة *</label>
+                        <input type="text" name="placeName" id="placeName" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">كلمة المرور *</label>
+                        <input type="password" name="password" id="password" class="form-control" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="activityType">نوع النشاط / الفئة</label>
+                        <select name="activityType" id="activityType" class="form-control">
+                            <option value="">اختر نوع النشاط</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="city">المدينة</label>
+                        <select name="city" id="city" class="form-control">
+                            <option value="">اختر المدينة</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="area">المنطقة</label>
+                        <select name="area" id="area" class="form-control">
+                            <option value="">اختر المنطقة</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="location">الموقع أو المول</label>
+                        <select name="location" id="location" class="form-control">
+                            <option value="">اختر الموقع</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="detailedAddress">العنوان التفصيلي</label>
+                    <input type="text" name="detailedAddress" id="detailedAddress" class="form-control">
+                </div>
+
+                <div class="form-group">
+                    <label for="mapLink">رابط الموقع على الخريطة</label>
+                    <input type="url" name="mapLink" id="mapLink" class="form-control" placeholder="https://maps.google.com/...">
+                    <button type="button" id="autoLocateBtn" class="btn auto-locate-btn">
+                        <i class="fas fa-location-arrow"></i>
+                        استخدم موقعي الحالي
+                    </button>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="phone">رقم التواصل</label>
+                        <input type="tel" name="phone" id="phone" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="whatsappLink">رابط واتساب</label>
+                        <input type="url" name="whatsappLink" id="whatsappLink" class="form-control" placeholder="https://wa.me/...">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="email">البريد الإلكتروني</label>
+                        <input type="email" name="email" id="email" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="website">الموقع الإلكتروني</label>
+                        <input type="url" name="website" id="website" class="form-control" placeholder="https://...">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="workingHours">ساعات العمل</label>
+                        <input type="text" name="workingHours" id="workingHours" class="form-control" placeholder="9:00 ص - 10:00 م">
+                    </div>
+                    <div class="form-group">
+                        <label for="delivery">خدمات التوصيل</label>
+                        <select name="delivery" id="delivery" class="form-control">
+                            <option value="">اختر</option>
+                            <option value="نعم">نعم</option>
+                            <option value="لا">لا</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="description">وصف مختصر</label>
+                    <textarea name="description" id="description" class="form-control" rows="3" placeholder="اكتب وصفاً مختصراً عن المكان أو الخدمة..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="placeImage">صورة شعار أو صورة المكان</label>
+                    <input type="file" name="placeImage" id="placeImage" class="form-control" accept="image/*" onchange="previewImage(this, 'placeImagePreview')">
+                    <div id="placeImagePreview" class="preview"></div>
+                </div>
+
+                <div class="text-center">
+                    <button type="submit" id="savePlaceBtn" class="btn btn-success">
+                        <i class="fas fa-save"></i>
+                        حفظ بيانات المكان
+                    </button>
+                    <button type="button" id="goPackagesBtn" class="btn" style="margin-right: 10px;">
+                        <i class="fas fa-box"></i>
+                        انتقل إلى الباقات
+                    </button>
+                </div>
+                <div id="activateHint" style="display: block;"></div>
+                <div id="packageCountdown"></div>
+            </form>
+        </div>
+
+   
+        <div id="ads-tab" class="tab-content" style="display: none;">
+            <h2>إدارة الإعلانات</h2>
+            
+            <div id="adQuotaSummary"></div>
+            <div id="adQuotaNotice"></div>
+
+            <form id="adForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="adPlaceId">المكان</label>
+                        <select name="placeId" id="adPlaceId" class="form-control" required>
+                            <option value="">اختر المكان</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="adType">نوع الإعلان</label>
+                        <select name="adType" id="adType" class="form-control" required>
+                            <option value="">اختر نوع الإعلان</option>
+                            <option value="عرض خاص">عرض خاص</option>
+                            <option value="منتج جديد">منتج جديد</option>
+                            <option value="خدمة">خدمة</option>
+                            <option value="حدث">حدث</option>
+                            <option value="أخرى">أخرى</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="adTitle">عنوان الإعلان *</label>
+                    <input type="text" name="adTitle" id="adTitle" class="form-control" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="coupon">كوبون خصم (اختياري)</label>
+                    <input type="text" name="coupon" id="coupon" class="form-control" placeholder="كود الخصم">
+                </div>
+
+                <div class="form-group">
+                    <label for="adDescription">وصف الإعلان</label>
+                    <textarea name="adDescription" id="adDescription" class="form-control" rows="4" placeholder="اكتب وصفاً تفصيلياً للإعلان..."></textarea>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="startDate">تاريخ البداية</label>
+                        <input type="date" name="startDate" id="startDate" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="endDate">تاريخ النهاية</label>
+                        <input type="date" name="endDate" id="endDate" class="form-control" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="adImages">صور الإعلان (حتى 8 صور)</label>
+                    <input type="file" name="adImages" id="adImages" class="form-control" accept="image/*" multiple onchange="previewMultipleImages(this, 'adImagesPreview')">
+                    <div id="adImagesPreview" class="preview"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="adVideo">فيديو الإعلان (اختياري)</label>
+                    <input type="file" name="adVideo" id="adVideo" class="form-control" accept="video/*" onchange="previewVideo(this, 'adVideoPreview')">
+                    <div id="adVideoPreview" class="preview"></div>
+                </div>
+
+                <div class="text-center">
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save"></i>
+                        حفظ الإعلان
+                    </button>
+                </div>
+            </form>
+
+            <hr class="mt-3 mb-3">
+
+            <h3>إعلاناتك</h3>
+            <div id="adsListContainer">
+                <p>لا توجد إعلانات حالياً.</p>
+            </div>
+        </div>
+
+      
+        <div id="packages-tab" class="tab-content" style="display: none;">
+            <h2>الباقات المتاحة</h2>
+            <p>اختر الباقة المناسبة لاحتياجاتك:</p>
+
+        
+            <div id="currentPackageCard" style="display: none;">
+                <h4>باقتك الحالية</h4>
+                <div id="currentPackageText"></div>
+                <div id="currentPackageCountdown"></div>
+            </div>
+            
+            <div id="packagesGrid" class="packages-grid">
+               
+            </div>
+        </div>
+    </div>
+
+
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">تسجيل الدخول</h3>
+                <button id="loginCancel" class="modal-close">&times;</button>
+            </div>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="phoneOrId">رقم الهاتف أو ID المكان</label>
+                    <input type="text" name="phoneOrId" id="phoneOrId" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">كلمة المرور</label>
+                    <input type="password" name="password" id="loginPassword" class="form-control" required>
+                </div>
+                <div class="text-center">
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-sign-in-alt"></i>
+                        دخول
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <script>
+        // إضافة دالة showTab عالمية قبل تحميل script.js
+        function showTab(tabName) {
+            // إخفاء جميع التبويبات
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.style.display = 'none';
+            });
+            
+            // إزالة الكلاس النشط من جميع الأزرار
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // إظهار التبويب المحدد
+            const targetContent = document.getElementById(tabName + '-tab');
+            if (targetContent) {
+                targetContent.style.display = 'block';
+            }
+            
+            // إضافة الكلاس النشط للزر المحدد
+            const targetTab = document.getElementById('tab-' + tabName);
+            if (targetTab) {
+                targetTab.classList.add('active');
+            }
+            
+            // تحديث المتغير العام
+            if (typeof window !== 'undefined') {
+                window.currentTab = tabName;
+            }
+        }
+
+        // دالة لتحديث مظهر بطاقات الباقات بناءً على الحالة
+        function updatePackageCardAppearance(packageId, status, isTrialUsed = false) {
+            const card = document.querySelector(`[data-package-id="${packageId}"]`);
+            if (!card) return;
+
+            // إزالة جميع الكلاسات السابقة
+            card.classList.remove('active', 'pending', 'expired');
+            
+            const button = card.querySelector('.choose-pkg');
+            if (!button) return;
+
+            // إزالة جميع كلاسات الأزرار السابقة
+            button.classList.remove('btn-activate', 'btn-active', 'btn-pending', 'btn-expired', 'btn-trial-used');
+
+            switch (status) {
+                case 'مفعلة':
+                    card.classList.add('active');
+                    button.classList.add('btn-active');
+                    button.textContent = '✓ مُفعّلة حالياً';
+                    button.disabled = true;
+                    break;
+
+                case 'قيد الدفع':
+                    card.classList.add('pending');
+                    button.classList.add('btn-pending');
+                    button.textContent = '⏳ قيد التحقق من الدفع';
+                    button.disabled = true;
+                    break;
+
+                case 'منتهية':
+                    card.classList.add('expired');
+                    button.classList.add('btn-expired');
+                    button.textContent = '🔄 تجديد الاشتراك';
+                    button.disabled = false;
+                    break;
+
+                default:
+                    // فحص إذا كانت باقة تجريبية مستخدمة سابقاً
+                    if (isTrialUsed && button.dataset.price === '0') {
+                        button.classList.add('btn-trial-used');
+                        button.textContent = '❌ تم استخدامها سابقاً';
+                        button.disabled = true;
+                    } else {
+                        button.classList.add('btn-activate');
+                        button.textContent = button.dataset.price === '0' ? '🚀 تفعيل تجريبي مجاني' : '💳 اختر هذه الباقة';
+                        button.disabled = false;
+                    }
+                    break;
+            }
+        }
+
+        // دالة لتحديث جميع بطاقات الباقات
+        function refreshAllPackageCards() {
+            const loggedPlace = getLoggedPlace ? getLoggedPlace() : null;
+            if (!loggedPlace) return;
+
+            const currentPackageId = loggedPlace.raw?.['الباقة'] || '';
+            const packageStatus = loggedPlace.raw?.['حالة الباقة'] || '';
+            const isTrialUsed = String(loggedPlace.raw?.['حالة الباقة التجريبية'] || '').toLowerCase() === 'true';
+
+            // تحديث جميع البطاقات
+            document.querySelectorAll('.pkg-card').forEach(card => {
+                const packageId = card.dataset.packageId || '';
+                
+                if (packageId === currentPackageId) {
+                    updatePackageCardAppearance(packageId, packageStatus, isTrialUsed);
+                } else {
+                    updatePackageCardAppearance(packageId, '', isTrialUsed);
+                }
+            });
+        }
+
+        // // استدعاء التحديث عند تحميل الصفحة
+        // document.addEventListener('DOMContentLoaded', () => {
+        //     // انتظار قليل لضمان تحميل script.js
+        //     setTimeout(refreshAllPackageCards, 500);
+        // });
+        ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // انتظار تحميل script.js ثم تشغيل الدوال
+            setTimeout(function() {
+                if (typeof refreshAllPackageCards !== 'undefined') {
+                    refreshAllPackageCards();
+                }
+                if (typeof refreshPackageUIFromDashboard !== 'undefined') {
+                    refreshPackageUIFromDashboard();
+                }
+            }, 1000);
+        });
+
+
+        ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+        ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+        // دالة للحصول على المكان المسجل
+    function getLoggedPlace() {
+        try {
+            const raw = localStorage.getItem('khedmatak_place');
+            return raw ? JSON.parse(raw) : null;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    // دالة مساعدة للتحقق من وجود دالة
+    function isFunction(functionToCheck) {
+        return functionToCheck && {}.toString.call(functionToCheck) === '[object Function]';
+    }
+
+    // دالة لتحديث حالة الزر بناءً على سعر الباقة
+    function updateButtonBasedOnPrice(button, price, isTrialUsed) {
+        if (price === '0' && isTrialUsed) {
+            button.classList.add('btn-trial-used');
+            button.textContent = '❌ تم استخدامها سابقاً';
+            button.disabled = true;
+        } else if (price === '0') {
+            button.classList.add('btn-activate');
+            button.textContent = '🚀 تفعيل تجريبي مجاني';
+            button.disabled = false;
+        } else {
+            button.classList.add('btn-activate');
+            button.textContent = '💳 اختر هذه الباقة';
+            button.disabled = false;
+        }
+    }
+
+        ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+    </script>
+    <script src="dashboard.js"></script>
+    <script>
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("/Ban/service-worker.js")
+          .then(() => console.log("Service Worker Registered"))
+          .catch(err => console.log("SW registration failed: ", err));
+          }
+    </script>
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+
+    <script>
+      const userLang = navigator.language || navigator.userLanguage;
+      const manifest = document.createElement('link');
+      manifest.rel = 'manifest';
+    
+      if (userLang.startsWith('ar')) {
+        manifest.href = '/Ban/manifest-ar.json?v=1';
+      } else {
+        manifest.href = '/Ban/manifest-en.json?v=1';
+      }
+    
+      document.head.appendChild(manifest);
+    </script>
+
+
+
+
+
+
+
+    <title>بان - إدارة الأماكن والإعلانات</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary-color: #4f46e5;
+            --primary-hover: #4338ca;
+            --success-color: #10b981;
+            --error-color: #ef4444;
+            --warning-color: #f59e0b;
+            --background-color: #f8fafc;
+            --card-background: #ffffff;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --border-color: #e5e7eb;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-primary);
+            line-height: 1.6;
+            transition: all 0.3s ease;
+            overflow-x: hidden;
+        }
+
+        body.dark {
+            --background-color: #111827;
+            --card-background: #1f2937;
+            --text-primary: #f9fafb;
+            --text-secondary: #d1d5db;
+            --border-color: #374151;
+        }
+
+        /* الأنيميشن الرئيسي */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        @keyframes bounceIn {
+            0% {
+                transform: scale(0.3);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.05);
+            }
+            70% {
+                transform: scale(0.9);
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        @keyframes shimmer {
+            0% {
+                background-position: -200px 0;
+            }
+            100% {
+                background-position: calc(200px + 100%) 0;
+            }
+        }
+
+        .animate-fadeInUp {
+            animation: fadeInUp 0.6s ease-out forwards;
+        }
+
+        .animate-slideInRight {
+            animation: slideInRight 0.5s ease-out forwards;
+        }
+
+        .animate-pulse {
+            animation: pulse 2s infinite;
+        }
+
+        .animate-float {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .animate-bounceIn {
+            animation: bounceIn 0.6s ease-out forwards;
+        }
+
+        .shimmer {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200px 100%;
+            animation: shimmer 1.5s infinite;
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 15px;
+            min-height: 100vh;
+        }
+
+        /* Header مع تحسينات للموبايل */
+        .header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #6366f1 100%);
+            color: white;
+            padding: 1rem 0;
+            box-shadow: var(--shadow-lg);
+            margin-bottom: 1.5rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            animation: slideInRight 0.8s ease-out;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .logo i {
+            font-size: 2rem;
+            animation: pulse 2s infinite;
+        }
+
+        .auth-section {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+        }
+
+        .btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.7rem 1.4rem;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 8px 25px rgba(79, 70, 229, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0) scale(0.98);
+        }
+
+        .btn:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+            box-shadow: 0 4px 15px rgba(107, 114, 128, 0.3);
+        }
+
+        .btn-secondary:hover {
+            background: #4b5563;
+            box-shadow: 0 8px 25px rgba(107, 114, 128, 0.4);
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-success:hover {
+            background: #059669;
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-danger {
+            background: var(--error-color);
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+            box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
+        }
+
+        .theme-toggle {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 0.7rem;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: pulse 2s infinite;
+        }
+
+        .theme-toggle:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+
+        /* Tabs مع تحسينات */
+        .tabs {
+            display: flex;
+            background: var(--card-background);
+            border-radius: 25px;
+            box-shadow: var(--shadow);
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+            padding: 4px;
+            gap: 4px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 1rem 1.5rem;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            border-radius: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tab::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, var(--primary-color), #6366f1);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: -1;
+        }
+
+        .tab:hover {
+            background: rgba(79, 70, 229, 0.1);
+            color: var(--primary-color);
+            transform: translateY(-2px);
+        }
+
+        .tab:hover::before {
+            opacity: 0.1;
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, var(--primary-color), #6366f1);
+            color: white;
+            transform: scale(1.02);
+            box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
+        }
+
+        .tab.active::before {
+            opacity: 1;
+        }
+
+        .tab i {
+            font-size: 1.1rem;
+            transition: transform 0.3s ease;
+        }
+
+        .tab.active i,
+        .tab:hover i {
+            transform: scale(1.2);
+        }
+
+        /* Tab Content */
+        .tab-content {
+            background: var(--card-background);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            margin-bottom: 1.5rem;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        /* Status Bars مع أنيميشن */
+        #placeStatusBar,
+        #packageStatusBar,
+        #subscriptionStatusBar {
+            animation: bounceIn 0.6s ease-out;
+            border-radius: 20px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        #placeStatusBar {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        #packageStatusBar {
+            background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+            color: white;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .package-status-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .package-info {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        #packageStatusTitle {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            animation: fadeInUp 0.5s ease-out 0.2s both;
+        }
+
+        #packageStatusDetails {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            animation: fadeInUp 0.5s ease-out 0.4s both;
+        }
+
+        .package-countdown-display {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 1rem 1.5rem;
+            border-radius: 15px;
+            font-weight: 600;
+            font-size: 1rem;
+            min-width: 150px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            animation: pulse 2s infinite;
+            transition: all 0.3s ease;
+        }
+
+        .package-countdown-display:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .package-countdown-display.countdown-ok {
+            background: rgba(16, 185, 129, 0.3);
+            border-color: rgba(16, 185, 129, 0.5);
+            animation: pulse 2s infinite;
+        }
+
+        .package-countdown-display.countdown-warn {
+            background: rgba(245, 158, 11, 0.3);
+            border-color: rgba(245, 158, 11, 0.5);
+            animation: pulse 1.5s infinite;
+        }
+
+        .package-countdown-display.countdown-crit {
+            background: rgba(239, 68, 68, 0.3);
+            border-color: rgba(239, 68, 68, 0.5);
+            animation: pulse 1s infinite;
+        }
+
+        @media (max-width: 768px) {
+            .package-status-content {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .package-countdown-display {
+                width: 100%;
+                margin-top: 1rem;
+            }
+        }
+
+        #placeStatusMessage {
+            margin-bottom: 1rem;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        #placeStatusButtons {
+            display: flex;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .status-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 0.8rem 1.2rem;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 500;
+        }
+
+        .status-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .status-btn.active {
+            background: rgba(255, 255, 255, 0.9);
+            color: #d97706;
+            font-weight: 600;
+            transform: scale(1.1);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        /* Subscription Status Bar */
+        #subscriptionStatusBar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            box-shadow: var(--shadow-lg);
+            border-radius: 20px;
+        }
+
+        #subscriptionStatusBar .subscription-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        #subscriptionTitle {
+            margin: 0 0 0.5rem 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        #subscriptionDetails {
+            margin: 0;
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        #subscriptionCountdown {
+            background: rgba(255,255,255,0.2);
+            padding: 0.8rem 1.2rem;
+            border-radius: 15px;
+            font-weight: 600;
+            min-width: 120px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.3);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        /* Package Info Card */
+        #packageInfoCard {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border: 1px solid #0ea5e9;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            animation: bounceIn 0.6s ease-out;
+        }
+
+        body.dark #packageInfoCard {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            border-color: #0ea5e9;
+        }
+
+        #packageInfoText {
+            font-weight: 600;
+            color: #0369a1;
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        body.dark #packageInfoText {
+            color: #38bdf8;
+        }
+
+        #packageInfoCountdown {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .countdown-ok { 
+            color: #059669; 
+            animation: pulse 2s infinite;
+        }
+        
+        .countdown-warn { 
+            color: #d97706; 
+            animation: pulse 1.5s infinite;
+        }
+        
+        .countdown-crit { 
+            color: #dc2626; 
+            animation: pulse 1s infinite;
+        }
+
+        /* Forms مع تحسينات */
+        .form-group {
+            margin-bottom: 1.5rem;
+            animation: fadeInUp 0.6s ease-out;
+            animation-fill-mode: both;
+        }
+
+        .form-group:nth-child(even) {
+            animation-delay: 0.1s;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid var(--border-color);
+            border-radius: 15px;
+            font-size: 1rem;
+            background: var(--card-background);
+            color: var(--text-primary);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+            transform: scale(1.02);
+        }
+
+        .form-control:hover {
+            border-color: var(--primary-hover);
+            transform: scale(1.01);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Preview مع أنيميشن */
+        .preview {
+            margin-top: 1rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .preview img {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 15px;
+            border: 3px solid var(--border-color);
+            transition: all 0.3s ease;
+            animation: bounceIn 0.6s ease-out;
+            cursor: pointer;
+        }
+
+        .preview img:hover {
+            transform: scale(1.1) rotate(2deg);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+            border-color: var(--primary-color);
+        }
+
+        .preview-image {
+            position: relative;
+            display: inline-block;
+        }
+
+        .remove-image {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: var(--error-color);
+            color: white;
+            border: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .remove-image:hover {
+            background: #dc2626;
+            transform: scale(1.2) rotate(90deg);
+        }
+
+        /* Packages Grid مع أنيميشن محسن */
+        .packages-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .pkg-card {
+            background: var(--card-background);
+            border: 2px solid var(--border-color);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            animation: fadeInUp 0.6s ease-out;
+            animation-fill-mode: both;
+        }
+
+        .pkg-card:nth-child(2) { animation-delay: 0.1s; }
+        .pkg-card:nth-child(3) { animation-delay: 0.2s; }
+        .pkg-card:nth-child(4) { animation-delay: 0.3s; }
+
+        .pkg-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-color), #6366f1, var(--primary-color));
+            background-size: 200% 100%;
+            animation: shimmer 2s linear infinite;
+        }
+
+        .pkg-card:hover {
+            transform: translateY(-8px) rotateX(5deg);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            border-color: var(--primary-color);
+        }
+
+        .pkg-card h3 {
+            margin-bottom: 1rem;
+            color: var(--primary-color);
+            font-size: 1.4rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .pkg-card h3::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            right: 0;
+            width: 50px;
+            height: 3px;
+            background: var(--primary-color);
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+
+        .pkg-card:hover h3::after {
+            width: 100%;
+        }
+
+        /* حالات البطاقات */
+        .pkg-card.active {
+            border-color: var(--success-color);
+            background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%);
+            box-shadow: 0 0 30px rgba(16, 185, 129, 0.3);
+            transform: scale(1.02);
+            animation: pulse 2s infinite;
+        }
+
+        body.dark .pkg-card.active {
+            background: linear-gradient(135deg, #064e3b 0%, #065f46 100%);
+            border-color: var(--success-color);
+        }
+
+        .pkg-card.active h3 {
+            color: var(--success-color);
+        }
+
+        .pkg-card.active::before {
+            content: "✓ الباقة المفعلة";
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: var(--success-color);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            z-index: 10;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+            animation: bounceIn 0.6s ease-out;
+        }
+
+        .pkg-card.pending {
+            border-color: var(--warning-color);
+            background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+            box-shadow: 0 0 30px rgba(245, 158, 11, 0.3);
+            animation: pulse 1.5s infinite;
+        }
+
+        body.dark .pkg-card.pending {
+            background: linear-gradient(135deg, #78350f 0%, #92400e 100%);
+            border-color: var(--warning-color);
+        }
+
+        .pkg-card.pending h3 {
+            color: var(--warning-color);
+        }
+
+        .pkg-card.pending::before {
+            content: "⏳ قيد الدفع";
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: var(--warning-color);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            animation: pulse 1.5s infinite;
+        }
+
+        .pkg-card.expired {
+            border-color: var(--error-color);
+            background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+            box-shadow: 0 0 30px rgba(239, 68, 68, 0.3);
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        body.dark .pkg-card.expired {
+            background: linear-gradient(135deg, #7f1d1d 0%, #991b1b 100%);
+            border-color: var(--error-color);
+        }
+
+        .pkg-card.expired h3 {
+            color: var(--error-color);
+        }
+
+        .pkg-card.expired::before {
+            content: "❌ منتهية";
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: var(--error-color);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            z-index: 10;
+            animation: shake 0.5s ease-in-out;
+        }
+
+        .choose-pkg {
+            width: 100%;
+            margin-top: 1.5rem;
+            padding: 1rem 2rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .choose-pkg::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+            z-index: 1;
+        }
+
+        .choose-pkg:hover::before {
+            left: 100%;
+        }
+
+        .choose-pkg.btn-activate {
+            background: linear-gradient(135deg, var(--primary-color), #6366f1);
+            color: white;
+            box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
+        }
+
+        .choose-pkg.btn-activate:hover {
+            background: linear-gradient(135deg, var(--primary-hover), #4f46e5);
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 25px rgba(79, 70, 229, 0.4);
+        }
+
+        .choose-pkg.btn-active {
+            background: linear-gradient(135deg, var(--success-color), #059669);
+            color: white;
+            cursor: not-allowed;
+            opacity: 0.8;
+            animation: pulse 2s infinite;
+        }
+
+        .choose-pkg.btn-pending {
+            background: linear-gradient(135deg, var(--warning-color), #d97706);
+            color: white;
+            cursor: not-allowed;
+            opacity: 0.8;
+            animation: pulse 1.5s infinite;
+        }
+
+        .choose-pkg.btn-expired {
+            background: linear-gradient(135deg, var(--error-color), #dc2626);
+            color: white;
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+        }
+
+        .choose-pkg.btn-expired:hover {
+            background: linear-gradient(135deg, #dc2626, var(--error-color));
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
+        }
+
+        .choose-pkg.btn-trial-used {
+            background: #9ca3af;
+            color: white;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        /* Ads */
+        .ad-card {
+            background: var(--card-background);
+            border: 2px solid var(--border-color);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .ad-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary-color);
+        }
+
+        .ad-card h4 {
+            margin-bottom: 0.8rem;
+            color: var(--primary-color);
+            font-size: 1.3rem;
+            position: relative;
+        }
+
+        .ad-card .meta {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .ad-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .ad-images {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .ad-images img {
+            width: 90px;
+            height: 90px;
+            object-fit: cover;
+            border-radius: 15px;
+            border: 3px solid var(--border-color);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .ad-images img:hover {
+            transform: scale(1.1);
+            border-color: var(--primary-color);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        }
+
+        .edit-btn, .delete-btn {
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Alerts مع أنيميشن */
+        .alert {
+            padding: 1.2rem;
+            margin: 1rem 0;
+            border-radius: 15px;
+            font-weight: 500;
+            display: none;
+            animation: bounceIn 0.6s ease-out;
+            border: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .alert::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-color), #6366f1);
+        }
+
+        .alert-success {
+            background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
+        .alert-error {
+            background: linear-gradient(135deg, #fee2e2, #fca5a5);
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+
+        body.dark .alert-success {
+            background: linear-gradient(135deg, #064e3b, #047857);
+            color: #a7f3d0;
+        }
+
+        body.dark .alert-error {
+            background: linear-gradient(135deg, #7f1d1d, #b91c1c);
+            color: #fca5a5;
+        }
+
+        /* Loading مع أنيميشن محسن */
+        #loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            backdrop-filter: blur(5px);
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+            position: relative;
+        }
+
+        .spinner::before {
+            content: '';
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            right: 5px;
+            bottom: 5px;
+            border: 4px solid rgba(255,255,255,0.1);
+            border-top: 4px solid rgba(79, 70, 229, 0.5);
+            border-radius: 50%;
+            animation: spin 0.8s cubic-bezier(0.4, 0, 0.2, 1) infinite reverse;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Modal مع أنيميشن */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+            animation: fadeInUp 0.3s ease-out;
+        }
+
+        .modal-content {
+            background: var(--card-background);
+            padding: 2.5rem;
+            border-radius: 25px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.25);
+            transform: scale(0.7);
+            animation: bounceIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .modal-content::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary-color), #6366f1, var(--primary-color));
+            background-size: 200% 100%;
+            animation: shimmer 2s linear infinite;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 2rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: all 0.3s ease;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-close:hover {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--error-color);
+            transform: rotate(90deg) scale(1.1);
+        }
+
+        /* Auto-locate button */
+        .auto-locate-btn {
+            background: linear-gradient(135deg, var(--success-color), #059669);
+            margin-top: 0.8rem;
+            width: 100%;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+            animation: pulse 2s infinite;
+        }
+
+        .auto-locate-btn:hover {
+            background: linear-gradient(135deg, #059669, var(--success-color));
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+        }
+
+        /* Ad Quota Notice */
+        #adQuotaNotice {
+            background: linear-gradient(135deg, #fff3cd, #fde68a);
+            color: #92400e;
+            padding: 1.2rem;
+            border-radius: 15px;
+            margin: 1rem 0;
+            display: none;
+            border: 1px solid #fcd34d;
+            animation: bounceIn 0.6s ease-out;
+        }
+
+        body.dark #adQuotaNotice {
+            background: linear-gradient(135deg, #78350f, #d97706);
+            color: #fcd34d;
+            border-color: #f59e0b;
+        }
+
+        #adQuotaSummary {
+            color: var(--text-secondary);
+            margin: 0.8rem 0;
+            font-size: 0.9rem;
+        }
+
+        /* Responsive Design محسن */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+                gap: 1rem;
+            }
+
+            .logo {
+                font-size: 1.5rem;
+            }
+
+            .auth-section {
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+
+            .tabs {
+                flex-direction: column;
+                border-radius: 15px;
+                padding: 2px;
+            }
+
+            .tab {
+                padding: 1rem;
+                border-radius: 12px;
+                margin: 2px;
+            }
+
+            .tab-content {
+                padding: 1.5rem 1rem;
+                border-radius: 15px;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .packages-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .pkg-card {
+                padding: 1.5rem;
+            }
+
+            .ad-actions {
+                flex-direction: column;
+                gap: 0.8rem;
+            }
+
+            #subscriptionStatusBar .subscription-content,
+            .package-status-content {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            #subscriptionCountdown,
+            .package-countdown-display {
+                width: 100%;
+                margin-top: 1rem;
+            }
+
+            .preview {
+                justify-content: center;
+            }
+
+            .preview img {
+                width: 80px;
+                height: 80px;
+            }
+
+            .ad-images {
+                justify-content: center;
+            }
+
+            .ad-images img {
+                width: 70px;
+                height: 70px;
+            }
+
+            #placeStatusButtons {
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+
+            .status-btn {
+                padding: 0.7rem 1rem;
+                font-size: 0.8rem;
+                margin: 0.2rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 8px;
+            }
+
+            .tab-content {
+                padding: 1rem 0.8rem;
+            }
+
+            .pkg-card {
+                padding: 1.2rem;
+            }
+
+            .form-control {
+                padding: 0.9rem;
+                font-size: 16px; /* منع تكبير الصفحة في iOS */
+            }
+
+            .btn {
+                padding: 0.8rem 1.2rem;
+                font-size: 0.9rem;
+            }
+
+            .modal-content {
+                padding: 1.5rem;
+                margin: 1rem;
+                width: calc(100% - 2rem);
+            }
+        }
+
+        /* Utility Classes */
+        .text-center {
+            text-align: center;
+        }
+
+        .text-success {
+            color: var(--success-color);
+        }
+
+        .text-error {
+            color: var(--error-color);
+        }
+
+        .mb-1 { margin-bottom: 0.5rem; }
+        .mb-2 { margin-bottom: 1rem; }
+        .mb-3 { margin-bottom: 1.5rem; }
+        .mt-1 { margin-top: 0.5rem; }
+        .mt-2 { margin-top: 1rem; }
+        .mt-3 { margin-top: 1.5rem; }
+
+        /* تحسينات إضافية للنصوص العربية */
+        h1, h2, h3, h4, h5, h6 {
+            line-height: 1.2;
+            font-weight: 600;
+        }
+
+        /* تأثير التمرير السلس */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* إخفاء الـ scrollbar في المتصفحات الحديثة */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--background-color);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-hover);
+        }
+
+        body.dark ::-webkit-scrollbar-track {
+            background: #1f2937;
+        }
+    </style>
+</head>
+<body>
+    <div id="loading">
+        <div class="spinner"></div>
+    </div>
+
+    <header class="header animate-slideInRight">
+        <div class="header-content">
+            <div class="logo">
+                <i class="fas fa-store"></i>
+                بان
+            </div>
+            <div class="auth-section">
+                <button onclick="location.href='https://moslimtech.github.io/Ban/'" class="btn btn-success">
+                    <i class="fas fa-bullhorn"></i>
+                    الإعلانات العامة
+                </button>
+                <button id="themeToggleBtn" class="theme-toggle" title="تغيير المظهر" onclick="toggleTheme()">
+                    <i id="themeIcon" class="fas fa-moon"></i>
+                </button>
+                <div id="loggedInUser" class="user-info" style="display: none;">
+                    <i class="fas fa-user"></i>
+                    <span></span>
+                </div>
+                <button id="loginBtn" class="btn">
+                    <i class="fas fa-sign-in-alt"></i>
+                    تسجيل الدخول
+                </button>
+                <button id="logoutBtn" class="btn btn-secondary" style="display: none;">
+                    <i class="fas fa-sign-out-alt"></i>
+                    تسجيل الخروج
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div id="successAlert" class="alert alert-success animate-bounceIn"></div>
+        <div id="errorAlert" class="alert alert-error animate-bounceIn"></div>
+
+        <div id="placeStatusBar" class="animate-bounceIn" style="display: none;">
+            <div id="placeStatusMessage"></div>
+            <div id="placeStatusButtons">
+                <button class="status-btn" data-status="مفتوح">مفتوح</button>
+                <button class="status-btn" data-status="مغلق">مغلق</button>
+                <button class="status-btn" data-status="مغلق للصلاة">مغلق للصلاة</button>
+                <button class="status-btn" data-status="تحت التجهيز">تحت التجهيز</button>
+            </div>
+        </div>
+
+        <div id="packageStatusBar" class="animate-bounceIn" style="display: none;">
+            <div class="package-status-content">
+                <div class="package-info">
+                    <div id="packageStatusTitle"></div>
+                    <div id="packageStatusDetails"></div>
+                </div>
+                <div id="packageStatusCountdown" class="package-countdown-display"></div>
+            </div>
+            <div id="packageStatusLoading" style="display: none; text-align: center; margin-top: 1rem;">
+                <div style="display: inline-flex; align-items: center; gap: 0.8rem; background: rgba(255,255,255,0.2); padding: 1rem 1.5rem; border-radius: 15px;">
+                    <div class="spinner" style="width: 20px; height: 20px; border-width: 2px;"></div>
+                    <span style="font-size: 0.9rem;">جاري تحديث البيانات...</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="subscriptionStatusBar" class="animate-bounceIn" style="display: none;">
+            <div class="subscription-content">
+                <div>
+                    <h4 id="subscriptionTitle"></h4>
+                    <p id="subscriptionDetails"></p>
+                </div>
+                <div id="subscriptionCountdown"></div>
+            </div>
+        </div>
+
+        <div class="tabs animate-fadeInUp">
+            <button class="tab active" id="tab-places" onclick="showTab('places')">
+                <i class="fas fa-store"></i>
+                بيانات المكان
+            </button>
+            <button class="tab" id="tab-ads" onclick="showTab('ads')" style="display: none;">
+                <i class="fas fa-bullhorn"></i>
+                الإعلانات
+            </button>
+            <button class="tab" id="tab-packages" onclick="showTab('packages')">
+                <i class="fas fa-box"></i>
+                الباقات
+            </button>
+        </div>
+
+        <div id="places-tab" class="tab-content animate-fadeInUp">
+            <h2>بيانات المكان أو الخدمة</h2>
+
+            <div id="packageInfoCard" class="animate-bounceIn" style="display: none;">
+                <div id="packageInfoText"></div>
+                <div id="packageInfoCountdown"></div>
+                <div id="packageInfoLoading" style="display: none; text-align: center; margin-top: 1rem;">
+                    <div style="display: inline-flex; align-items: center; gap: 0.8rem; background: linear-gradient(135deg, #f0f9ff, #e0f2fe); padding: 1rem 1.5rem; border-radius: 15px; border: 1px solid #0ea5e9;">
+                        <div class="spinner" style="width: 20px; height: 20px; border-width: 2px; border-top-color: #0ea5e9;"></div>
+                        <span style="font-size: 0.9rem; color: #0369a1;">جاري تحديث حالة الباقة...</span>
+                    </div>
+                </div>
+            </div>
+
+            <form id="placeForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="placeName">اسم المكان أو الخدمة *</label>
+                        <input type="text" name="placeName" id="placeName" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">كلمة المرور *</label>
+                        <input type="password" name="password" id="password" class="form-control" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="activityType">نوع النشاط / الفئة</label>
+                        <select name="activityType" id="activityType" class="form-control">
+                            <option value="">اختر نوع النشاط</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="city">المدينة</label>
+                        <select name="city" id="city" class="form-control">
+                            <option value="">اختر المدينة</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="area">المنطقة</label>
+                        <select name="area" id="area" class="form-control">
+                            <option value="">اختر المنطقة</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="location">الموقع أو المول</label>
+                        <select name="location" id="location" class="form-control">
+                            <option value="">اختر الموقع</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="detailedAddress">العنوان التفصيلي</label>
+                    <input type="text" name="detailedAddress" id="detailedAddress" class="form-control">
+                </div>
+
+                <div class="form-group">
+                    <label for="mapLink">رابط الموقع على الخريطة</label>
+                    <input type="url" name="mapLink" id="mapLink" class="form-control" placeholder="https://maps.google.com/...">
+                    <button type="button" id="autoLocateBtn" class="btn auto-locate-btn">
+                        <i class="fas fa-location-arrow"></i>
+                        استخدم موقعي الحالي
+                    </button>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="phone">رقم التواصل</label>
+                        <input type="tel" name="phone" id="phone" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="whatsappLink">رابط واتساب</label>
+                        <input type="url" name="whatsappLink" id="whatsappLink" class="form-control" placeholder="https://wa.me/...">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="email">البريد الإلكتروني</label>
+                        <input type="email" name="email" id="email" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="website">الموقع الإلكتروني</label>
+                        <input type="url" name="website" id="website" class="form-control" placeholder="https://...">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="workingHours">ساعات العمل</label>
+                        <input type="text" name="workingHours" id="workingHours" class="form-control" placeholder="9:00 ص - 10:00 م">
+                    </div>
+                    <div class="form-group">
+                        <label for="delivery">خدمات التوصيل</label>
+                        <select name="delivery" id="delivery" class="form-control">
+                            <option value="">اختر</option>
+                            <option value="نعم">نعم</option>
+                            <option value="لا">لا</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="description">وصف مختصر</label>
+                    <textarea name="description" id="description" class="form-control" rows="3" placeholder="اكتب وصفاً مختصراً عن المكان أو الخدمة..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="placeImage">صورة شعار أو صورة المكان</label>
+                    <input type="file" name="placeImage" id="placeImage" class="form-control" accept="image/*" onchange="previewImage(this, 'placeImagePreview')">
+                    <div id="placeImagePreview" class="preview"></div>
+                </div>
+
+                <div class="text-center">
+                    <button type="submit" id="savePlaceBtn" class="btn btn-success">
+                        <i class="fas fa-save"></i>
+                        حفظ بيانات المكان
+                    </button>
+                    <button type="button" id="goPackagesBtn" class="btn" onclick="showTab('packages')" style="margin-right: 1rem;">
+                        <i class="fas fa-box"></i>
+                        انتقل إلى الباقات
+                    </button>
+                </div>
+                <div id="activateHint" style="display: block; margin-top: 1.5rem;"></div>
+                <div id="packageCountdown"></div>
+            </form>
+        </div>
+
+        <div id="ads-tab" class="tab-content" style="display: none;">
+            <h2>إدارة الإعلانات</h2>
+            
+            <div id="adQuotaSummary"></div>
+            <div id="adQuotaNotice" class="animate-bounceIn"></div>
+
+            <form id="adForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="adPlaceId">المكان</label>
+                        <select name="placeId" id="adPlaceId" class="form-control" required>
+                            <option value="">اختر المكان</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="adType">نوع الإعلان</label>
+                        <select name="adType" id="adType" class="form-control" required>
+                            <option value="">اختر نوع الإعلان</option>
+                            <option value="عرض خاص">عرض خاص</option>
+                            <option value="منتج جديد">منتج جديد</option>
+                            <option value="خدمة">خدمة</option>
+                            <option value="حدث">حدث</option>
+                            <option value="أخرى">أخرى</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="adTitle">عنوان الإعلان *</label>
+                    <input type="text" name="adTitle" id="adTitle" class="form-control" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="coupon">كوبون خصم (اختياري)</label>
+                    <input type="text" name="coupon" id="coupon" class="form-control" placeholder="كود الخصم">
+                </div>
+
+                <div class="form-group">
+                    <label for="adDescription">وصف الإعلان</label>
+                    <textarea name="adDescription" id="adDescription" class="form-control" rows="4" placeholder="اكتب وصفاً تفصيلياً للإعلان..."></textarea>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="startDate">تاريخ البداية</label>
+                        <input type="date" name="startDate" id="startDate" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="endDate">تاريخ النهاية</label>
+                        <input type="date" name="endDate" id="endDate" class="form-control" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="adImages">صور الإعلان (حتى 8 صور)</label>
+                    <input type="file" name="adImages" id="adImages" class="form-control" accept="image/*" multiple onchange="previewMultipleImages(this, 'adImagesPreview')">
+                    <div id="adImagesPreview" class="preview"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="adVideo">فيديو الإعلان (اختياري)</label>
+                    <input type="file" name="adVideo" id="adVideo" class="form-control" accept="video/*" onchange="previewVideo(this, 'adVideoPreview')">
+                    <div id="adVideoPreview" class="preview"></div>
+                </div>
+
+                <div class="text-center">
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save"></i>
+                        حفظ الإعلان
+                    </button>
+                </div>
+            </form>
+
+            <hr class="mt-3 mb-3" style="border: none; height: 1px; background: linear-gradient(90deg, transparent, var(--border-color), transparent);">
+
+            <h3>إعلاناتك</h3>
+            <div id="adsListContainer">
+                <p class="text-center" style="color: var(--text-secondary); padding: 2rem; font-size: 1.1rem;">لا توجد إعلانات حالياً.</p>
+            </div>
+        </div>
+
+        <div id="packages-tab" class="tab-content" style="display: none;">
+            <h2>الباقات المتاحة</h2>
+            <p class="text-center" style="font-size: 1.1rem; color: var(--text-secondary); margin-bottom: 2rem;">اختر الباقة المناسبة لاحتياجاتك:</p>
+
+            <div id="currentPackageCard" class="animate-bounceIn" style="display: none; background: linear-gradient(135deg, var(--success-color), #059669); color: white; padding: 2rem; border-radius: 20px; text-align: center; margin-bottom: 2rem; box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);">
+                <h4 style="margin-bottom: 1rem; font-size: 1.3rem;"><i class="fas fa-crown"></i> باقتك الحالية</h4>
+                <div id="currentPackageText" style="font-size: 1.1rem; margin-bottom: 1rem;"></div>
+                <div id="currentPackageCountdown" style="font-size: 1rem; font-weight: 600; background: rgba(255,255,255,0.2); padding: 0.8rem 1.5rem; border-radius: 15px; display: inline-block;"></div>
+            </div>
+            
+            <div id="packagesGrid" class="packages-grid">
+                <!-- البطاقات سيتم إنشاؤها ديناميكياً -->
+            </div>
+        </div>
+    </div>
+
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">تسجيل الدخول</h3>
+                <button id="loginCancel" class="modal-close">&times;</button>
+            </div>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="phoneOrId">رقم الهاتف أو ID المكان</label>
+                    <input type="text" name="phoneOrId" id="phoneOrId" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">كلمة المرور</label>
+                    <input type="password" name="password" id="loginPassword" class="form-control" required>
+                </div>
+                <div class="text-center">
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-sign-in-alt"></i>
+                        دخول
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // إضافة تأثيرات أنيميشن عند التمرير
+        function initScrollAnimations() {
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('animate-fadeInUp');
+                    }
+                });
+            }, observerOptions);
+
+            // مراقبة العناصر
+            document.querySelectorAll('.form-group, .pkg-card, .ad-card').forEach(el => {
+                observer.observe(el);
+            });
+        }
+
+        // دالة showTab مع أنيميشن
+        function showTab(tabName) {
+            // إخفاء جميع التبويبات مع أنيميشن
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.style.opacity = '0';
+                content.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    content.style.display = 'none';
+                }, 300);
+            });
+            
+            // إزالة الكلاس النشط من جميع الأزرار مع أنيميشن
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+                tab.style.transform = 'scale(0.95)';
+            });
+            
+            // انتظار انتهاء الأنيميشن ثم إظهار التبويب الجديد
+            setTimeout(() => {
+                const targetContent = document.getElementById(tabName + '-tab');
+                if (targetContent) {
+                    targetContent.style.display = 'block';
+                    targetContent.style.opacity = '0';
+                    targetContent.style.transform = 'translateY(20px)';
+                    
+                    // تشغيل الأنيميشن
+                    requestAnimationFrame(() => {
+                        targetContent.style.transition = 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+                        targetContent.style.opacity = '1';
+                        targetContent.style.transform = 'translateY(0)';
+                    });
+                }
+                
+                // إضافة الكلاس النشط للزر المحدد مع أنيميشن
+                const targetTab = document.getElementById('tab-' + tabName);
+                if (targetTab) {
+                    targetTab.classList.add('active');
+                    targetTab.style.transform = 'scale(1.02)';
+                }
+                
+                // تحديث المتغير العام
+                if (typeof window !== 'undefined') {
+                    window.currentTab = tabName;
+                }
+            }, 350);
+        }
+
+        // دالة مساعدة للتحقق من وجود دالة
+        function isFunction(functionToCheck) {
+            return functionToCheck && {}.toString.call(functionToCheck) === '[object Function]';
+        }
+
+        // دالة تبديل المظهر مع أنيميشن
+        function toggleTheme() {
+            const themeToggleBtn = document.getElementById('themeToggleBtn');
+            const currentTheme = document.body.classList.contains('dark') ? 'dark' : 'light';
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            // أنيميشن التحول
+            themeToggleBtn.style.transform = 'rotate(180deg) scale(0.8)';
+            
+            setTimeout(() => {
+                applyTheme(newTheme);
+                themeToggleBtn.style.transform = 'rotate(0deg) scale(1)';
+            }, 150);
+        }
+
+        // دالة تطبيق المظهر
+        function applyTheme(theme) {
+            const body = document.body;
+            const icon = document.getElementById('themeIcon');
+            const lbl = document.getElementById('themeLabel');
+            
+            // أنيميشن التحول
+            body.style.transition = 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+            
+            if (theme === 'dark') {
+                body.classList.add('dark');
+                if (icon) icon.className = 'fas fa-sun';
+                if (lbl) lbl.textContent = 'الوضع النهاري';
+            } else {
+                body.classList.remove('dark');
+                if (icon) icon.className = 'fas fa-moon';
+                if (lbl) lbl.textContent = 'الوضع الليلي';
+            }
+            
+            // حفظ الإعدادات
+            try { 
+                localStorage.setItem('ban_theme', theme || 'light'); 
+            } catch(e) {}
+        }
+
+        // دالة لتحديث مظهر بطاقات الباقات بناءً على الحالة مع أنيميشن
+        function updatePackageCardAppearance(packageId, status, isTrialUsed = false) {
+            const card = document.querySelector(`[data-package-id="${packageId}"]`);
+            if (!card) return;
+
+            // أنيميشن التحديث
+            card.style.transform = 'scale(0.95)';
+            card.style.opacity = '0.7';
+            
+            setTimeout(() => {
+                // إزالة جميع الكلاسات السابقة
+                card.classList.remove('active', 'pending', 'expired');
+                
+                const button = card.querySelector('.choose-pkg');
+                if (!button) return;
+
+                // إزالة جميع كلاسات الأزرار السابقة
+                button.classList.remove('btn-activate', 'btn-active', 'btn-pending', 'btn-expired', 'btn-trial-used');
+
+                const price = Number(button.dataset.price || 0);
+
+                switch (status) {
+                    case 'مفعلة':
+                        card.classList.add('active');
+                        button.classList.add('btn-active');
+                        button.innerHTML = '<i class="fas fa-check-circle"></i> مُفعّلة حالياً';
+                        button.disabled = true;
+                        button.style.opacity = '0.8';
+                        card.style.animation = 'pulse 2s infinite';
+                        break;
+
+                    case 'قيد الدفع':
+                        card.classList.add('pending');
+                        button.classList.add('btn-pending');
+                        button.innerHTML = '<i class="fas fa-clock"></i> قيد التحقق من الدفع';
+                        button.disabled = true;
+                        button.style.opacity = '0.8';
+                        card.style.animation = 'pulse 1.5s infinite';
+                        break;
+
+                    case 'منتهية':
+                        card.classList.add('expired');
+                        button.classList.add('btn-expired');
+                        button.innerHTML = '<i class="fas fa-sync-alt"></i> تجديد الاشتراك';
+                        button.disabled = false;
+                        button.style.opacity = '1';
+                        card.style.animation = 'shake 0.5s ease-in-out';
+                        break;
+
+                    default:
+                        if (isTrialUsed && price === 0) {
+                            card.classList.add('expired');
+                            button.classList.add('btn-trial-used');
+                            button.innerHTML = '<i class="fas fa-times-circle"></i> تم استخدامها سابقاً';
+                            button.disabled = true;
+                            button.style.opacity = '0.6';
+                        } else {
+                            button.classList.add('btn-activate');
+                            if (price === 0) {
+                                button.innerHTML = '<i class="fas fa-rocket"></i> تفعيل تجريبي مجاني';
+                            } else {
+                                button.innerHTML = '<i class="fas fa-credit-card"></i> اختر هذه الباقة';
+                            }
+                            button.disabled = false;
+                            button.style.opacity = '1';
+                        }
+                        break;
+                }
+                
+                // إعادة الأنيميشن
+                setTimeout(() => {
+                    card.style.transform = 'scale(1)';
+                    card.style.opacity = '1';
+                    card.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+                }, 150);
+            }, 150);
+        }
+
+        // دالة لتحديث جميع بطاقات الباقات
+        function refreshAllPackageCards() {
+            const loggedPlace = getLoggedPlace ? getLoggedPlace() : null;
+            if (!loggedPlace) return;
+
+            const currentPackageId = loggedPlace.raw?.['الباقة'] || '';
+            const packageStatus = loggedPlace.raw?.['حالة الباقة'] || '';
+            const isTrialUsed = String(loggedPlace.raw?.['حالة الباقة التجريبية'] || '').toLowerCase() === 'true';
+
+            document.querySelectorAll('.pkg-card').forEach((card, index) => {
+                const packageId = card.dataset.packageId || '';
+                
+                setTimeout(() => {
+                    if (packageId === currentPackageId) {
+                        updatePackageCardAppearance(packageId, packageStatus, isTrialUsed);
+                    } else {
+                        updatePackageCardAppearance(packageId, '', isTrialUsed);
+                    }
+                }, index * 100);
+            });
+        }
+
+        // تهيئة الصفحة
+        document.addEventListener('DOMContentLoaded', function() {
+            // تهيئة المظهر
+            try {
+                const saved = localStorage.getItem('ban_theme');
+                if (saved) applyTheme(saved);
+                else {
+                    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                    applyTheme(prefersDark ? 'dark' : 'light');
+                }
+            } catch (e) { 
+                applyTheme('light'); 
+            }
+
+            // إضافة تأثيرات الأنيميشن
+            initScrollAnimations();
+
+            // انتظار تحميل script.js ثم تشغيل الدوال
+            setTimeout(function() {
+                if (typeof refreshAllPackageCards !== 'undefined') {
+                    refreshAllPackageCards();
+                }
+                if (typeof refreshPackageUIFromDashboard !== 'undefined') {
+                    refreshPackageUIFromDashboard();
+                }
+                
+                // إضافة أنيميشن للعناصر بعد التحميل
+                document.querySelectorAll('.form-group, .pkg-card, .ad-card').forEach((el, index) => {
+                    el.style.opacity = '0';
+                    el.style.transform = 'translateY(30px)';
+                    setTimeout(() => {
+                        el.style.transition = 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
+                        el.style.opacity = '1';
+                        el.style.transform = 'translateY(0)';
+                    }, index * 100);
+                });
+            }, 500);
+
+            // تحسين تجربة اللمس للموبايل
+            let touchStartY = 0;
+            let touchEndY = 0;
+
+            document.addEventListener('touchstart', e => {
+                touchStartY = e.changedTouches[0].screenY;
+            }, { passive: true });
+
+            document.addEventListener('touchend', e => {
+                touchEndY = e.changedTouches[0].screenY;
+                handleTouchSwipe();
+            }, { passive: true });
+
+            function handleTouchSwipe() {
+                const swipeThreshold = 50;
+                const diff = touchStartY - touchEndY;
+
+                if (Math.abs(diff) > swipeThreshold) {
+                    if (diff > 0) {
+                        // Swipe up - ربما الانتقال للتبويب التالي
+                        console.log('Swipe up detected');
+                    } else {
+                        // Swipe down - ربما العودة
+                        console.log('Swipe down detected');
+                    }
+                }
+            }
+        });
+
+        // دالة للحصول على المكان المسجل
+        function getLoggedPlace() {
+            try {
+                const raw = localStorage.getItem('khedmatak_place');
+                return raw ? JSON.parse(raw) : null;
+            } catch (e) {
+                return null;
+            }
+        }
+
+        // دالة مساعدة للتحقق من وجود دالة
+        function isFunction(functionToCheck) {
+            return functionToCheck && {}.toString.call(functionToCheck) === '[object Function]';
+        }
+
+        // دالة لتحديث حالة الزر بناءً على سعر الباقة مع أنيميشن
+        function updateButtonBasedOnPrice(button, price, isTrialUsed) {
+            // أنيميشن التحديث
+            button.style.transform = 'scale(0.95)';
+            button.style.opacity = '0.7';
+            
+            setTimeout(() => {
+                if (price === '0' && isTrialUsed) {
+                    button.classList.add('btn-trial-used');
+                    button.innerHTML = '<i class="fas fa-times-circle"></i> تم استخدامها سابقاً';
+                    button.disabled = true;
+                } else if (price === '0') {
+                    button.classList.add('btn-activate');
+                    button.innerHTML = '<i class="fas fa-rocket"></i> تفعيل تجريبي مجاني';
+                    button.disabled = false;
+                } else {
+                    button.classList.add('btn-activate');
+                    button.innerHTML = '<i class="fas fa-credit-card"></i> اختر هذه الباقة';
+                    button.disabled = false;
+                }
+                
+                // إعادة الأنيميشن
+                setTimeout(() => {
+                    button.style.transform = 'scale(1)';
+                    button.style.opacity = '1';
+                    button.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+                }, 100);
+            }, 150);
+        }
+
+        // إضافة تأثيرات للصور
+        function previewImage(input, previewId) {
+            const preview = document.getElementById(previewId);
+            preview.innerHTML = '';
+            
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.className = 'preview-image animate-bounceIn';
+                    img.style.animationDelay = '0.2s';
+                    
+                    const removeBtn = document.createElement('button');
+                    removeBtn.className = 'remove-image';
+                    removeBtn.innerHTML = '&times;';
+                    removeBtn.onclick = function() {
+                        input.value = '';
+                        preview.innerHTML = '';
+                    };
+                    
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'preview-image';
+                    wrapper.appendChild(img);
+                    wrapper.appendChild(removeBtn);
+                    
+                    preview.appendChild(wrapper);
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        // تحسين previewMultipleImages
+        function previewMultipleImages(input, previewId) {
+            const preview = document.getElementById(previewId);
+            preview.innerHTML = '';
+            
+            if (input.files) {
+                Array.from(input.files).forEach((file, index) => {
+                    if (file.type.startsWith('image/')) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            const img = document.createElement('img');
+                            img.src = e.target.result;
+                            img.className = 'animate-bounceIn';
+                            img.style.animationDelay = `${index * 0.1}s`;
+                            
+                            const wrapper = document.createElement('div');
+                            wrapper.className = 'preview-image';
+                            wrapper.style.position = 'relative';
+                            wrapper.style.display = 'inline-block';
+                            
+                            const removeBtn = document.createElement('button');
+                            removeBtn.className = 'remove-image';
+                            removeBtn.innerHTML = '&times;';
+                            removeBtn.onclick = function() {
+                                wrapper.remove();
+                            };
+                            
+                            wrapper.appendChild(img);
+                            wrapper.appendChild(removeBtn);
+                            preview.appendChild(wrapper);
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+            }
+        }
+
+        // تحسين previewVideo
+        function previewVideo(input, previewId) {
+            const preview = document.getElementById(previewId);
+            preview.innerHTML = '';
+            
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const video = document.createElement('video');
+                    video.src = e.target.result;
+                    video.controls = true;
+                    video.width = 200;
+                    video.className = 'animate-bounceIn';
+                    
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'preview-image';
+                    wrapper.style.position = 'relative';
+                    wrapper.style.display = 'inline-block';
+                    
+                    const removeBtn = document.createElement('button');
+                    removeBtn.className = 'remove-image';
+                    removeBtn.innerHTML = '&times;';
+                    removeBtn.onclick = function() {
+                        input.value = '';
+                        preview.innerHTML = '';
+                    };
+                    
+                    wrapper.appendChild(video);
+                    wrapper.appendChild(removeBtn);
+                    preview.appendChild(wrapper);
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        // إضافة PWA support
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => console.log('SW registered'))
+                    .catch(error => console.log('SW registration failed'));
+            });
+        }
+    </script>
+
+    <script src="dashboard.js"></script>
+    <script>
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("/Ban/service-worker.js")
+          .then(() => console.log("Service Worker Registered"))
+          .catch(err => console.log("SW registration failed: ", err));
+          }
+    </script>
+
+
+
+    
+</body>
+</html>
+

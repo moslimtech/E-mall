@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>فاتورة / عرض سعر</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body * { font-family: "Tajawal", sans-serif; }
+    @media print {
+      body * { visibility: hidden; }
+      #docPreview, #docPreview * { visibility: visible; }
+      #docPreview { position: absolute; top:0; left:0; right:0; }
+      .remove-row-btn { display: none !important; }
+    }
+    .watermark { position: absolute; top: 70%; left:50%; transform: translate(-50%,-50%) rotate(-30deg); font-size:60px; color:rgba(200,200,200,0.18); pointer-events:none; z-index:0; }
+    [contenteditable]:empty:before { content: attr(data-placeholder); color:#9CA3AF; }
+    table input[type="text"], table input[type="number"] { outline:none; border:none; background:transparent; width:100%; padding:0.25rem; font-size:0.875rem; }
+    table td { word-break: break-word; vertical-align: top; }
+    table { border-collapse: collapse; }
+    td, th { border: 1px solid #ddd; padding: 0.5rem; }
+    #datetimeInput { width:100%; padding:0.5rem; border:1px solid #ddd; border-radius:0.375rem; text-align:right; }
+  </style>
+</head>
+<body class="bg-gray-100 p-2 md:p-4">
+<div class="max-w-4xl mx-auto bg-white rounded-xl shadow-lg p-3 md:p-6 relative">
+  <div class="mb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+    <div class="flex gap-2 justify-center md:justify-start">
+      <button onclick="setDocType('فاتورة')" class="px-3 py-2 bg-blue-600 text-white rounded-lg">فاتورة</button>
+      <button onclick="setDocType('عرض سعر')" class="px-3 py-2 bg-green-600 text-white rounded-lg">عرض سعر</button>
+    </div>
+    <div class="flex-1 md:flex md:justify-end">
+      <input id="placeLogo" type="file" accept="image/*">
+    </div>
+  </div>
+
+  <div id="docPreview" class="relative border rounded-lg p-3 md:p-6 bg-white">
+    <div class="watermark" id="watermark"></div>
+    <div class="flex justify-between items-center mb-3">
+      <img id="logoPreview" class="h-12 hidden" alt="شعار" />
+      <h1 id="docTitle" class="text-xl font-bold flex-1 text-center">فاتورة</h1>
+    </div>
+    <h2 class="text-lg font-bold text-center mb-2">
+      <span id="placeTitle" contenteditable="true" data-placeholder="اسم المكان" oninput="updatePreview()"></span>
+    </h2>
+    <p id="placeNumberContainer" class="text-center text-gray-600 mb-3">
+      <span id="placeNumberText" contenteditable="true" data-placeholder="رقم المكان" oninput="updatePreview()"></span>
+    </p>
+
+    <div class="space-y-2 md:grid md:grid-cols-3 md:gap-2 md:items-center mb-3">
+      <div id="customerContainer" class="md:col-span-2">
+        <p class="flex items-center gap-1">
+          <strong>اسم العميل:</strong>
+          <span id="customerText" contenteditable="true" data-placeholder="اسم العميل" class="flex-1" oninput="updatePreview()"></span>
+        </p>
+      </div>
+      <div id="datetimeContainer">
+        <small class="text-gray-500 text-right mb-1">التاريخ والوقت</small>
+        <input type="datetime-local" id="datetimeInput" oninput="updatePreview()">
+      </div>
+    </div>
+
+    <div class="overflow-x-auto mb-3">
+      <table id="itemsTable" class="w-full text-center table-fixed min-w-full">
+        <thead><tr id="tableHead"></tr></thead>
+        <tbody id="items"></tbody>
+      </table>
+    </div>
+
+    <div id="totalSection" class="text-right font-bold text-lg">الإجمالي: <span id="total">0</span> ج.م</div>
+    <div id="notesSection" class="mt-3 hidden">
+      <div id="generalNotes" contenteditable="true" data-placeholder="ملاحظات عامة..." class="border rounded-lg p-2 min-h-[60px]"></div>
+    </div>
+  </div>
+
+  <div class="flex flex-wrap justify-center gap-2 mt-4">
+    <button onclick="addRow()" class="px-3 py-2 bg-blue-500 text-white rounded-lg">📝 إضافة صنف</button>
+    <button onclick="downloadPDF()" class="px-3 py-2 bg-red-600 text-white rounded-lg">📥 تحميل PDF</button>
+    <button onclick="printDoc()" class="px-3 py-2 bg-gray-700 text-white rounded-lg">🖨️ طباعة</button>
+    <button onclick="shareDoc()" class="px-3 py-2 bg-green-600 text-white rounded-lg">⚡ مشاركة</button>
+  </div>
+</div>
+
+<script>
+const { jsPDF } = window.jspdf;
+let docType = "فاتورة";
+let logoData = null;
+
+function setDocType(type){
+  docType = type;
+  document.getElementById('docTitle').textContent = type;
+  buildTable();
+  toggleSections();
+  updatePreview();
+}
+
+function buildTable(){
+  const head = document.getElementById('tableHead');
+  head.innerHTML = '';
+  if(docType==='فاتورة'){
+    head.innerHTML = `<th>الصنف</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th><th class="remove-row-btn">X</th>`;
+  } else {
+    head.innerHTML = `<th>الصنف</th><th>الوحدة</th><th>السعر</th><th>ملاحظات</th><th class="remove-row-btn">X</th>`;
+  }
+  document.getElementById('items').innerHTML = '';
+  updateTotal();
+}
+
+document.getElementById('placeLogo').addEventListener('change', e=>{
+  const file=e.target.files[0];
+  if(file){
+    const reader = new FileReader();
+    reader.onload = ev => { logoData = ev.target.result; document.getElementById('logoPreview').src = logoData; document.getElementById('logoPreview').classList.remove('hidden'); };
+    reader.readAsDataURL(file);
+  }
+});
+
+window.addEventListener('load', ()=>{
+  const now = new Date().toISOString().slice(0,16);
+  const datetimeEl=document.getElementById('datetimeInput');
+  if(!datetimeEl.value) datetimeEl.value = now;
+  buildTable();
+  toggleSections();
+  updatePreview();
+});
+
+function addRow(){
+  let row='';
+  if(docType==='فاتورة'){
+    row=`<tr>
+      <td><input type="text" placeholder="اسم الصنف" oninput="updatePreview()"></td>
+      <td><input type="number" value="1" min="1" oninput="updateTotal()"></td>
+      <td><input type="number" value="0" min="0" oninput="updateTotal()"></td>
+      <td class="total">0</td>
+      <td class="remove-row-btn"><button onclick="this.closest('tr').remove(); updateTotal()" class="text-red-500">X</button></td>
+    </tr>`;
+  } else {
+    row=`<tr>
+      <td><input type="text" placeholder="اسم الصنف" oninput="updatePreview()"></td>
+      <td><input type="text" placeholder="الوحدة" oninput="updatePreview()"></td>
+      <td><input type="number" value="0" oninput="updatePreview()"></td>
+      <td><input type="text" placeholder="ملاحظات" oninput="updatePreview()"></td>
+      <td class="remove-row-btn"><button onclick="this.closest('tr').remove(); updatePreview()" class="text-red-500">X</button></td>
+    </tr>`;
+  }
+  document.getElementById('items').insertAdjacentHTML('beforeend',row);
+}
+
+function updateTotal(){
+  let total=0;
+  document.querySelectorAll('#items tr').forEach(tr=>{
+    if(docType==='فاتورة'){
+      const qty = parseFloat(tr.cells[1].querySelector('input').value)||0;
+      const price = parseFloat(tr.cells[2].querySelector('input').value)||0;
+      const sum = +(qty*price).toFixed(2);
+      tr.cells[3].textContent=sum;
+      total+=sum;
+    }
+  });
+  document.getElementById('total').textContent=Number.isInteger(total)?total:total.toFixed(2);
+}
+
+function updatePreview(){
+  document.getElementById('watermark').textContent=document.getElementById('placeTitle').textContent.trim()||'';
+}
+
+function toggleSections(){
+  document.getElementById('totalSection').style.display=(docType==='فاتورة')?'block':'none';
+  document.getElementById('notesSection').style.display=(docType==='عرض سعر')?'block':'none';
+}
+
+function hideEmptyElements(){
+  ['placeTitle','placeNumberText','customerText','datetimeInput'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el && !el.textContent?.trim()) el.closest('*')?.classList.add('export-hide-if-empty');
+  });
+  if(docType==='عرض سعر'){
+    const notes=document.getElementById('generalNotes').textContent.trim();
+    if(!notes) document.getElementById('notesSection').classList.add('export-hide-if-empty');
+  }
+}
+
+function showAllElements(){document.querySelectorAll('.export-hide-if-empty').forEach(el=>el.classList.remove('export-hide-if-empty'));}
+
+function downloadPDF(){
+  const docElement=document.getElementById('docPreview');
+  hideEmptyElements();
+  html2canvas(docElement,{scale:2}).then(canvas=>{
+    showAllElements();
+    const imgData=canvas.toDataURL('image/jpeg',1.0);
+    const pdf=new jsPDF('p','mm','a4');
+    const pageWidth=210, pageHeight=297;
+    const imgProps=pdf.getImageProperties(imgData);
+    let pdfWidth=pageWidth-20, pdfHeight=(imgProps.height*pdfWidth)/imgProps.width;
+    if(pdfHeight>pageHeight-20){pdfHeight=pageHeight-20; pdfWidth=(imgProps.width*pdfHeight)/imgProps.height;}
+    const x=(pageWidth-pdfWidth)/2;
+    pdf.addImage(imgData,'JPEG',x,10,pdfWidth,pdfHeight);
+    pdf.save((docType||'document')+'.pdf');
+  });
+}
+
+function shareDoc(){downloadPDF();}
+
+function printDoc(){
+  hideEmptyElements();
+  window.print();
+  setTimeout(showAllElements,1000);
+}
+</script>
+</body>
+</html>
